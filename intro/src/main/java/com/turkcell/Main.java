@@ -52,5 +52,38 @@ public class Main {
         String str4 = str3.intern(); // Havuzda aynı değere sahip bir String varsa onu kullanır
         System.out.println(str3 == str4); // true (intern() ile havuzdaki referansı kullanır)
 
+        // Döngüler (Loops)
+        // X işlemini birden fazla kez çalıştırmak istediğimizde kullanırız
+        // i (iteration = yenileme) genellikle 0'dan başlar ve belirli bir koşula kadar devam eder
+
+        for (int i = 0; i < 5; i++) {
+            System.out.println("Döngü sayısı: " + i);
+        }
+
+        String[] students = {"Tamer", "Ahmet", "Ayşe"};
+        for (int i = 0; i < students.length; i++) {
+            System.out.println("Öğrenci: " + students[i]);
+        }
+
+        for (String student : students) {
+            System.out.println("Öğrenci: " + student);
+        }
+
+        // iterasyon => Koşul
+        int whileCounter = 0;
+        while (whileCounter < 5) {
+            System.out.println("While döngüsü sayısı: " + whileCounter);
+            whileCounter++; 
+        }
+
+        String name2 = "Tamer";
+        System.out.println(name2);
+        name2 = "Halit";
+        System.out.println(name2);
+        String name3 = name2.concat("abc"); 
+        // String immutable (değiştirilemez) bir yapıya sahiptir. 
+        // concat() gibi metotlar yeni bir String oluşturur, mevcut String'i değiştirmez.
+        System.out.println(name3);
+
     }
 } // Main classının kapsama alanı (sınır)
