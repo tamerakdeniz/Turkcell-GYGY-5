@@ -16,11 +16,17 @@ public class Main {
          */
 
         System.out.println(10);
-        int X = 15; // X değişkeni oluşturuldu ve değeri atandı
-        System.out.println(X); // X değişkeninin değeri ekrana yazdırıldı
+        int X = 15;
+        System.out.println(X);
         // Tanımlandıktan itibaren değişebilir, erişilebilir ve kullanılabilirler
-        X = 20; // X değişkeninin değeri güncellendi
-        System.out.println(X); // X değişkeninin güncellenmiş değeri ekrana yazdırıldı
+        X = 20; 
+        System.out.println(X);
+
+        // Değişken tipleri => int, double, boolean, char, String
+        String name = "Tamer";
+        String age = "24"; 
+        boolean isStudent = true; 
+        char grade = 'A'; 
 
     }
 } // Main classının kapsama alanı (sınır)
