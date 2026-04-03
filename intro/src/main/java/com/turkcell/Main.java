@@ -85,5 +85,25 @@ public class Main {
         // concat() gibi metotlar yeni bir String oluşturur, mevcut String'i değiştirmez.
         System.out.println(name3);
 
+        // Karar Blokları & Döngüler
+
+        // Belirtli 1+ kapsamdaki kod bloklarının çalıştırılmasını sağlarlar
+        // Karar bloğu = minimum 1, maximum n adet karara göre farklı kod bloklarının çalıştırabilir
+        // Koşul: true/false döndüren bir ifade
+
+
+        // Her koşul bloğu yalnızca 1 scope (kapsama alanı) çalıştırır.
+        // Kodlar yukarıdan aşağıya doğru okunur ve çalıştırılır. Koşullar sırayla kontrol edilir ve ilk true olan bloğun kodu çalıştırılır, diğer bloklar atlanır.
+        int age2 = 18;
+        if(age2 >= 18) {
+            System.out.println("Reşitsiniz.");
+        }
+        else if(age2 == 18) {
+            System.out.println("Ehliyet alabilirsiniz.");
+        }
+        else {
+            System.out.println("Reşit değilsiniz.");
+        }
+
     }
 } // Main classının kapsama alanı (sınır)
