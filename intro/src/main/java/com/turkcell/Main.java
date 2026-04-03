@@ -111,10 +111,10 @@ public class Main {
         if(username.equals("Tamer")) {
             System.out.println("Hoşgeldiniz, admin!");
         }
-        calculateGrade(50);
-        calculateGrade(70);
+        calculateGrade(50, "Tamer");
+        calculateGrade(70, "Mehmet");
         calculateGrade(85);
-        calculateGrade(63);
+        calculateGrade(63, "Fatma");
     }
 
     // Methodlar (Functions) => Belirli bir görevi yerine getiren kod bloklarıdır. Tekrar kullanılabilirler ve programın farklı yerlerinden çağrılabilirler.
@@ -122,20 +122,24 @@ public class Main {
     // Dönüş Tipleri (Return Types) => void, int, String, boolean, vs.
     // Method İsimleri => camelCase (örneğin: calculateGrade)
     // Parametreler (Parameters) => Methodun çalışması için gereken bilgileri sağlarlar. Methodun parantezleri içinde tanımlanırlar.
-    public static void calculateGrade(int grade) {
+    public static void calculateGrade(int grade, String studentName) { // Required Parameters (Zorunlu Parametreler)
         if (grade >= 90) {
-            System.out.println("Notunuz: A");
+            System.out.println(studentName + " Notunuz: A");
         } else if (grade >= 80) {
-            System.out.println("Notunuz: B");
+            System.out.println(studentName + " Notunuz: B");
         } else if (grade >= 70) {
-            System.out.println("Notunuz: C");
+            System.out.println(studentName + " Notunuz: C");
         } else if (grade >= 60) {
-            System.out.println("Notunuz: D");
+            System.out.println(studentName + " Notunuz: D");
         } else {
-            System.out.println("Notunuz: F");
+            System.out.println(studentName + " Notunuz: F");
         }
-
     }
 
+    // studentName parametresi olmadan da not hesaplamak isteyebiliriz, bu durumda studentName parametresini opsiyonel (isteğe bağlı) yapabiliriz.
+    // Method Overloading (Aşırı Yükleme) => Aynı isimde ancak farklı parametre listesine sahip birden fazla method tanımlama tekniğidir. Bu sayede aynı işlemi farklı şekillerde gerçekleştirebiliriz.
+    public static void calculateGrade(int grade) { // Overloading (Aşırı Yükleme)
+        calculateGrade(grade, "Öğrenci");
+    }
 
 } // Main classının kapsama alanı (sınır)
