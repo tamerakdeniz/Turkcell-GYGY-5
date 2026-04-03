@@ -115,7 +115,16 @@ public class Main {
         calculateGrade(70, "Mehmet");
         calculateGrade(85);
         calculateGrade(63, "Fatma");
+
+
+        double result = sum(5.5, 3.2);
+        System.out.println("Toplam: " + result);
+
+        double result2 = sum(1.0, 2.0, 3.0, 4.0,10,12.3);
+        System.out.println("Toplam: " + result2);
     }
+
+
 
     // Methodlar (Functions) => Belirli bir görevi yerine getiren kod bloklarıdır. Tekrar kullanılabilirler ve programın farklı yerlerinden çağrılabilirler.
     // Erişim belirticileri (Access Modifiers) => public, private, protected, default
@@ -142,4 +151,15 @@ public class Main {
         calculateGrade(grade, "Öğrenci");
     }
 
+    public static double sum(double a, double b) {
+        return a + b;
+    }
+    
+    public static double sum(double... numbers) { // Varargs (Değişken Sayıda Parametre) - (JS spread operator'üne benzer)
+        double total = 0;
+        for (double num : numbers) {
+            total += num;
+        }
+        return total;
+    }
 } // Main classının kapsama alanı (sınır)
