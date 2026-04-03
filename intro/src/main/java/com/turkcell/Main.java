@@ -105,5 +105,37 @@ public class Main {
             System.out.println("Reşit değilsiniz.");
         }
 
+        // Karar Blokları bir scope çalıştırmak zorunda değildir.
+        // String karşılaştırırken == operatörünü kullanmak referans karşılaştırması yapar, equals() metodu ise değer karşılaştırması yapar.
+        String username = "admin";
+        if(username.equals("Tamer")) {
+            System.out.println("Hoşgeldiniz, admin!");
+        }
+        calculateGrade(50);
+        calculateGrade(70);
+        calculateGrade(85);
+        calculateGrade(63);
     }
+
+    // Methodlar (Functions) => Belirli bir görevi yerine getiren kod bloklarıdır. Tekrar kullanılabilirler ve programın farklı yerlerinden çağrılabilirler.
+    // Erişim belirticileri (Access Modifiers) => public, private, protected, default
+    // Dönüş Tipleri (Return Types) => void, int, String, boolean, vs.
+    // Method İsimleri => camelCase (örneğin: calculateGrade)
+    // Parametreler (Parameters) => Methodun çalışması için gereken bilgileri sağlarlar. Methodun parantezleri içinde tanımlanırlar.
+    public static void calculateGrade(int grade) {
+        if (grade >= 90) {
+            System.out.println("Notunuz: A");
+        } else if (grade >= 80) {
+            System.out.println("Notunuz: B");
+        } else if (grade >= 70) {
+            System.out.println("Notunuz: C");
+        } else if (grade >= 60) {
+            System.out.println("Notunuz: D");
+        } else {
+            System.out.println("Notunuz: F");
+        }
+
+    }
+
+
 } // Main classının kapsama alanı (sınır)
