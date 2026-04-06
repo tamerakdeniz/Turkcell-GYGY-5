@@ -20,7 +20,7 @@ public class Car extends Vehicle { // Car, Vehicle sınıfından türetilmiş bi
 
     public Car(boolean hasSunroof, String brand) {
         System.out.println("Car object created.");
-        this.hasSunroof = hasSunroof;
+        this.setHasSunroof(hasSunroof);
         super.setBrand(brand); // Vehicle sınıfındaki setBrand methodunu çağırarak brand'ı "Car" olarak ayarlıyoruz.
     }
 
