@@ -12,9 +12,9 @@ public class Car {
 
     // Gerçek hayattaki her şeyi değil, programda kullanacağımız özelliklerini tanımlayacağız.
 
-    public String brand;
-    public String model;
-    public int year;
+    private String brand;
+    private String model;
+    private int year;
 
     // ENCAPSULATION => veriyi koruma, gizleme
 
@@ -27,8 +27,7 @@ public class Car {
         // pricePerDay => setPricePerDay metodunun parametresi
         if (pricePerDay < 0) {
             System.out.println("Fiyat negatif olamaz.");
-            pricePerDay = 0.0; // Negatif fiyatı sıfır yap  
-            return;
+            pricePerDay = 0.0; // Negatif fiyatı sıfır yaparak düzeltme
         }
         this.pricePerDay = pricePerDay;
     }
@@ -36,6 +35,30 @@ public class Car {
     // getter methods => getBrand, getModel, getYear, getPricePerDay
     public double getPricePerDay() {
         return this.pricePerDay;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
     }
 
 
