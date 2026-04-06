@@ -1,7 +1,7 @@
 package com.turkcell;
 
 // Car isminde bir type oluşturmak.
-public class Car {
+public class Car extends Vehicle { // Car, Vehicle sınıfından türetilmiş bir sınıftır.
 
     // erişim belirleyiciler => access modifiers - public, private, protected, default
     // kimlerin erişebileceğini belirler
@@ -12,54 +12,31 @@ public class Car {
 
     // Gerçek hayattaki her şeyi değil, programda kullanacağımız özelliklerini tanımlayacağız.
 
-    private String brand;
-    private String model;
-    private int year;
+    private boolean hasSunroof; // Arabanın cam tavanı olup olmadığı
+
+    private String[] specs; // Arabanın özellikleri (cam tavan, bebek koltuğu, otonom sürüş gibi)
 
     // ENCAPSULATION => veriyi koruma, gizleme
+    public String[] getSpecs() {
+        return specs.clone();
+    }
+    public void setSpecs(String[] specs) {
+        this.specs = specs.clone();
+    }
+    public boolean isHasSunroof() {
+        return hasSunroof;
+    }
+    public void setHasSunroof(boolean hasSunroof) {
+        this.hasSunroof = hasSunroof;
+    }
 
-    private double pricePerDay;
+    // Değerlerini al, referansı alma.
+
 
     // setter methods => setBrand, setModel, setYear, setPricePerDay
-    public void setPricePerDay(double pricePerDay) {
-        // this => bu sınıfın kendisi, yani Car sınıfı
-        // this.pricePerDay => Car sınıfının pricePerDay özelliği
-        // pricePerDay => setPricePerDay metodunun parametresi
-        if (pricePerDay < 0) {
-            System.out.println("Fiyat negatif olamaz.");
-            pricePerDay = 0.0; // Negatif fiyatı sıfır yaparak düzeltme
-        }
-        this.pricePerDay = pricePerDay;
-    }
+
 
     // getter methods => getBrand, getModel, getYear, getPricePerDay
-    public double getPricePerDay() {
-        return this.pricePerDay;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
-    }
-
-    public int getYear() {
-        return year;
-    }
-
-    public void setYear(int year) {
-        this.year = year;
-    }
 
 
 }
