@@ -2,16 +2,31 @@ package com.turkcell;
 
 // Car isminde bir type oluşturmak.
 public class Car extends Vehicle { // Car, Vehicle sınıfından türetilmiş bir sınıftır.
+    /*
+    erişim belirleyiciler => access modifiers - public, private, protected, default
+    kimlerin erişebileceğini belirler
+    public => herkes erişebilir
+    private => sadece sınıfın içinden erişilebilir
+    protected => sadece aynı paket içindeki sınıflardan ve alt (türetilen) sınıflardan erişilebilir
+    default => sadece aynı paket içindeki sınıflardan erişilebilir
+    Gerçek hayattaki her şeyi değil, programda kullanacağımız özelliklerini tanımlayacağız.
+    */
 
-    // erişim belirleyiciler => access modifiers - public, private, protected, default
-    // kimlerin erişebileceğini belirler
-    // public => herkes erişebilir
-    // private => sadece sınıfın içinden erişilebilir
-    // protected => sadece aynı paket içindeki sınıflardan ve alt (türetilen) sınıflardan erişilebilir
-    // default => sadece aynı paket içindeki sınıflardan erişilebilir
+    /* Constructor => Yapıcı method, yazmasanız bile bir tane vardır, default constructor denir, parametresizdir, gövdesi boştur. Car() şeklindedir.
+    Eğer bir constructor yazarsanız, default constructor ortadan kalkar, artık Car() şeklinde bir constructor olmaz, parametreli constructor'lar yazmanız gerekir.
+    */
 
-    // Gerçek hayattaki her şeyi değil, programda kullanacağımız özelliklerini tanımlayacağız.
+    // Subclass - superclass
 
+    public Car(boolean hasSunroof, String brand) {
+        System.out.println("Car object created.");
+        this.hasSunroof = hasSunroof;
+        super.setBrand(brand); // Vehicle sınıfındaki setBrand methodunu çağırarak brand'ı "Car" olarak ayarlıyoruz.
+    }
+
+    public Car() {
+    }
+    
     private boolean hasSunroof; // Arabanın cam tavanı olup olmadığı
 
     private String[] specs; // Arabanın özellikleri (cam tavan, bebek koltuğu, otonom sürüş gibi)

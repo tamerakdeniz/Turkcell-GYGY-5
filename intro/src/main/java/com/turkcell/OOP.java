@@ -4,7 +4,7 @@ public class OOP {
     public static void main(String[] args) {
 
         // new => yeni bir instace oluşturma keyword'ü
-        Car car1 = new Car();
+        Car car1 = new Car(); // Car sınıfından bir nesne oluşturma, constructor'ı çağırma
         car1.setBrand("Toyota");
         car1.setModel("Corolla");
         car1.setYear(2020);
@@ -24,5 +24,7 @@ public class OOP {
 
         Bike bike1 = new Bike();
 
+        Car car2 = new Car(true, "Honda"); // Car sınıfından bir nesne oluşturma, constructor'ı çağırma
+        System.out.println(car2.getBrand()); // Car sınıfının constructor'ında brand'i
     }
 }
