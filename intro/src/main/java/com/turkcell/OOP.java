@@ -22,5 +22,7 @@ public class OOP {
         System.out.println(car1.getYear());
         System.out.println(car1.getPricePerDay());
 
+        Bike bike1 = new Bike();
+
     }
 }
