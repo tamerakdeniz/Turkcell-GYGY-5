@@ -23,10 +23,6 @@ public class Main {
             scanner.nextLine();
 
             if (mainChoice == 1) {
-                System.out.print("Müşteri ID'si giriniz: ");
-                int id = scanner.nextInt();
-                scanner.nextLine();
-
                 System.out.print("Müşteri Ad Soyad giriniz: ");
                 String name = scanner.nextLine();
 
@@ -39,7 +35,7 @@ public class Main {
                 System.out.print("Başlangıç Bakiyesini giriniz: ");
                 double balance = scanner.nextDouble();
 
-                Customer newCustomer = new Customer(id, name, balance, password, monthlyIncome);
+                Customer newCustomer = new Customer(0, name, balance, password, monthlyIncome);
                 repository.add(newCustomer);
 
             } else if (mainChoice == 2) {
@@ -97,15 +93,16 @@ public class Main {
                             double miktar = scanner.nextDouble();
 
                             if (miktar <= maxKredi) {
-                                // Bakiye eksiye düşecek
-                                currentCustomer.setBalance(currentCustomer.getBalance() - miktar);
                                 double geriOdeme = miktar + (miktar * (2.8 * taksit) / 100);
-                                // Basit faiz hesabı örneği: Anapara + (Anapara * Faiz Orani * Taksit / 100)
+                                // Kullanıcının bakiyesinden anapara + faiz toplamı (geri ödeme) düşülecek
+                                currentCustomer.setBalance(currentCustomer.getBalance() - geriOdeme);
+
                                 System.out.println("Kredi onaylandı! " + miktar
-                                        + " TL krediniz tanımlandı ve bakiyeniz eksiye düşürüldü.");
+                                        + " TL krediniz tanımlandı ve toplam borç bakiyenize yansıtıldı.");
                                 System.out.println("Yapılan hesaplama: " + miktar + " TL anapara, " + taksit
                                         + " ay vade, %2.8 faiz oranı.");
-                                System.out.println("Toplam Geri Ödeme Tutarınız: " + geriOdeme + " TL");
+                                System.out
+                                        .println("Toplam Geri Ödeme Tutarınız (Anapara + Faiz): " + geriOdeme + " TL");
                                 System.out.println(
                                         "Yeni Bakiyeniz (Borç dahil): " + currentCustomer.getBalance() + " TL");
                             } else {

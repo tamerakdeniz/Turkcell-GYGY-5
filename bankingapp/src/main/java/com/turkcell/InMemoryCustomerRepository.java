@@ -6,12 +6,13 @@ import java.util.List;
 public class InMemoryCustomerRepository implements CustomerRepository {
 
     private List<Customer> customers = new ArrayList<>();
-    private int nextId = 1; // Otomatik atanan ID sayacı
+    private int nextId = 1;
 
     public void add(Customer customer) {
-        customer.setId(nextId++); // Müşteriye sırası gelen ID değerini set edip sayacı 1 arttır
+        customer.setId(nextId++);
         customers.add(customer);
-        System.out.println(customer.getName() + " isimli kayıt oluşturuldu! Lütfen not alınız, Müşteri ID Numaranız: " + customer.getId());
+        System.out.println(customer.getName() + " isimli kayıt oluşturuldu! Lütfen not alınız, Müşteri ID Numaranız: "
+                + customer.getId());
     }
 
     public void delete(int id) {
