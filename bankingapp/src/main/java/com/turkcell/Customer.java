@@ -5,11 +5,10 @@ public class Customer {
     private String name;
     private double balance;
 
-    // Default constructor
+    // Constructor
     public Customer() {
     }
 
-    // Constructor
     public Customer(int id, String name, double balance) {
         this.id = id;
         this.name = name;
