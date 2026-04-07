@@ -4,18 +4,20 @@ public class Customer {
     private int id;
     private String name;
     private double balance;
+    private String password;
+    private double monthlyIncome;
 
-    // Constructor
     public Customer() {
     }
 
-    public Customer(int id, String name, double balance) {
+    public Customer(int id, String name, double balance, String password, double monthlyIncome) {
         this.id = id;
         this.name = name;
         this.balance = balance;
+        this.password = password;
+        this.monthlyIncome = monthlyIncome;
     }
 
-    // Encapsulation
     public int getId() {
         return id;
     }
@@ -38,5 +40,21 @@ public class Customer {
 
     public void setBalance(double balance) {
         this.balance = balance;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public double getMonthlyIncome() {
+        return monthlyIncome;
+    }
+
+    public void setMonthlyIncome(double monthlyIncome) {
+        this.monthlyIncome = monthlyIncome;
     }
 }
