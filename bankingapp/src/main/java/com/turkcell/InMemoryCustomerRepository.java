@@ -1,25 +1,20 @@
 package com.turkcell;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class InMemoryCustomerRepository implements CustomerRepository {
-    
-    private Customer[] customers = new Customer[100];
-    private int customerCount = 0;
+
+    // Boyutu baştan belli olmayan, dinamik büyüyebilen ArrayList yapısı kullanıldı
+    private List<Customer> customers = new ArrayList<>();
 
     public void add(Customer customer) {
-        if (customerCount < customers.length) {
-            customers[customerCount] = customer;
-            customerCount++;
-            System.out.println(customer.getName() + " isimli müşteri sisteme başarıyla eklendi!");
-        } else {
-            System.out.println("Sistem kapasitesi tam dolu! Yeni müşteri eklenemez.");
-        }
+        customers.add(customer);
+        System.out.println(customer.getName() + " isimli müşteri sisteme başarıyla eklendi!");
     }
 
-    public Customer[] getAll() {
-        Customer[] currentCustomers = new Customer[customerCount];
-        for (int i = 0; i < customerCount; i++) {
-            currentCustomers[i] = customers[i];
-        }
-        return currentCustomers;
+    public List<Customer> getAll() {
+        // Doğrudan listeyi dönüyoruz, boş dizileri temizlemeye vs. gerek kalmadı
+        return customers;
     }
 }

@@ -1,8 +1,10 @@
 package com.turkcell;
 
-public interface CustomerRepository {
+import java.util.List;
 
+public interface CustomerRepository {
+    
     void add(Customer customer);
 
-    Customer[] getAll();
+    List<Customer> getAll();
 }
