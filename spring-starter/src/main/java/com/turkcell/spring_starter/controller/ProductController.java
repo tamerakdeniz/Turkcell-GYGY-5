@@ -2,6 +2,7 @@ package com.turkcell.spring_starter.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.turkcell.spring_starter.dto.ProductCreatedResponse;
+import com.turkcell.spring_starter.dto.ProductForCreateDto;
 import com.turkcell.spring_starter.model.Product;
 
 /*
@@ -47,7 +50,7 @@ public class ProductController {
 
 }
 */
-
+// Altın Kural: Veritabanı nesneleri requestte de response'ta da kullanılmaz. DTO (Data Transfer Object) kullanılır. ProductRequest, ProductResponse gibi. Ancak şimdilik basit olması açısından direkt Product kullanacağız.
 @RestController 
 @RequestMapping("/api/product") 
 public class ProductController {
@@ -57,6 +60,7 @@ public class ProductController {
 
     @GetMapping()
     public List<Product> getAllProducts() {
+        // Veritabanındaki Productları nesnelerini listele
         return productList;
     }
 
@@ -67,9 +71,34 @@ public class ProductController {
         return productList.stream().filter(i->i.getId() == id).findFirst().orElse(null);
     }
 
+    // Request-Response Pattern => İstek ve cevap arasında bir sözleşme vardır. 
+    // İstek ve cevap nesneleri genellikle birbirinden farklıdır. 
+    // Bu yüzden DTO kullanılır.
+    // Birebir başka bir istek-cevap çiftiyle aynı içeriğe sahip olabilirler ancak isimleri farklıdır. 
+    // ProductForCreateDto, ProductForUpdateDto gibi.
+
     @PostMapping
-    public void createProduct(@RequestBody Product product) {
+    public ProductCreatedResponse createProduct(@RequestBody ProductForCreateDto productDto) {
+        // Veritabanına product nesnesini ekle..
+
+        // Sen dışardan ProductForCreateDto alıyosun 
+        // ama veritabanı Product ile çalışıyor
+
+        // Transfer => MANUAL MAPPING
+        Product product = new Product();
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setId(productList.size() + 1); // Auto Increment gibi çalışır. Ancak gerçek bir veritabanında bu işi veritabanı yapar.
+
         productList.add(product);
+
+        // Domain Nesnesi -> Dto
+        ProductCreatedResponse response = new ProductCreatedResponse();
+        response.setId(product.getId());
+        response.setName(product.getName());
+        response.setPrice(product.getPrice());
+
+        return response;
     }
     @PutMapping
     public void updateProduct(@RequestBody Product product) {
@@ -81,6 +110,11 @@ public class ProductController {
     }
     @DeleteMapping("{id}")
     public void deleteProduct(@PathVariable int id) {
-        ///..
+        ///.. Todo..
+        Product productToDelete = productList.stream().filter(p -> p.getId() == id).findFirst().orElseThrow();
+        productList.remove(productToDelete);
     }
 }
+
+// DTO => Data Transfer Object. Veritabanı nesneleri requestte de response'ta da kullanılmaz. DTO (Data Transfer Object) kullanılır. ProductRequest, ProductResponse gibi. Ancak şimdilik basit olması açısından direkt Product kullanacağız.
+// Entity ile X (Controller, service) arası veri transferi için oluşturulan sınıflardır.
