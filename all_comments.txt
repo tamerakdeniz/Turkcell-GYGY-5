@@ -1,0 +1,238 @@
+File: [intro/src/main/java/com/turkcell/Car.java](intro/src/main/java/com/turkcell/Car.java)
+// Car isminde bir type oluşturmak.
+// Car, Vehicle sınıfından türetilmiş bir sınıftır.
+/*
+    erişim belirleyiciler => access modifiers - public, private, protected, default
+    kimlerin erişebileceğini belirler
+    public => herkes erişebilir
+    private => sadece sınıfın içinden erişilebilir
+    protected => sadece aynı paket içindeki sınıflardan ve alt (türetilen) sınıflardan erişilebilir
+    default => sadece aynı paket içindeki sınıflardan erişilebilir
+    Gerçek hayattaki her şeyi değil, programda kullanacağımız özelliklerini tanımlayacağımız.
+    */ (multi-line block)
+/* Constructor => Yapıcı method, yazmasanız bile bir tane vardır, default constructor denir, parametresizdir, gövdesi boştur. Car() şeklindedir.
+    Eğer bir constructor yazarsanız, default constructor ortadan kalkar, artık Car() şeklinde bir constructor olmaz, parametreli constructor'lar yazmanız gerekir.
+    */ (multi-line block)
+// Subclass - superclass
+// Vehicle sınıfındaki setBrand methodunu çağırarak brand'ı "Car" olarak ayarlıyoruz.
+private boolean hasSunroof; // Arabanın cam tavanı olup olmadığı
+private String[] specs; // Arabanın özellikleri (cam tavan, bebek koltuğu, otonom sürüş gibi)
+// ENCAPSULATION => veriyi koruma, gizleme
+// Değerlerini al, referansı alma.
+// setter methods => setBrand, setModel, setYear, setPricePerDay
+// getter methods => getBrand, getModel, getYear, getPricePerDay
+
+---
+
+File: [intro/src/main/java/com/turkcell/Bike.java](intro/src/main/java/com/turkcell/Bike.java)
+// Bike, Vehicle sınıfından türetilmiş bir sınıftır.
+private boolean hasBasket; // Bisikletin sepeti olup olmadığı
+// Inheritance => kalıtım
+// Bir nesnenin tüm özelliklerini ve extra kendi özelliklerini taşıması
+// Car ve Bike birbirinden farklı nesneler, ama ikisi de birer araç
+// extends (genişletmek) => miras alma, kalıtım
+
+---
+
+File: [intro/src/main/java/com/turkcell/Vehicle.java](intro/src/main/java/com/turkcell/Vehicle.java)
+// Vehicle isminde bir type oluşturmak.
+// Araç katorisine giren tüm nesnelerin ortak özelliklerini ve davranışlarını tanımlayacağımız bir sınıf
+// this => bu sınıfın kendisi, yani Car sınıfı
+// this.pricePerDay => Car sınıfının pricePerDay özelliği
+// pricePerDay => setPricePerDay metodunun parametresi
+// Negatif fiyatı sıfır yaparak düzeltme
+
+---
+
+File: [intro/src/main/java/com/turkcell/CarRepository.java](intro/src/main/java/com/turkcell/CarRepository.java)
+// Sistemimde araba veritabanı olarak çalışmak isteyen her nesne bu arayüzü implement etmek zorunda, bu sayede araba ekleme işlemi için addCar methodunu kullanabilirler.
+// Bir car repository'si nasıl davranmalı? Net kalıp ve kurallar ile tanımla.
+// Soyut => içi boş,  yalnızca imza (signature) içerir, implementasyon içermez.
+void add(Car car); // Araba ekleme
+// Böylelikle PostgreSQLCarRepository, MySQLCarRepository, MongoDBCarRepository gibi farklı veritabanları için farklı implementasyonlar yapabiliriz.
+// Bu sayede kodumuz daha esnek ve genişletilebilir olur, yeni bir veritabanı eklemek istediğimizde sadece yeni bir sınıf oluşturup CarRepository arayüzünü implement etmemiz yeterli olur.
+
+---
+
+File: [intro/src/main/java/com/turkcell/PgCarRepository.java](intro/src/main/java/com/turkcell/PgCarRepository.java)
+// Implement ediyorsan imza (signature) uymak zorundasın, yani addCar methodunu implement etmek zorundasın, aksi takdirde hata alırsın.
+
+---
+
+File: [intro/src/main/java/com/turkcell/Functions.java](intro/src/main/java/com/turkcell/Functions.java)
+System.out.println("Ana methoddaki mesaj: " + message); // Merhaba (String immutable olduğu için orijinal değer değişmez)
+System.out.println("Ana methoddaki ilk sayı: " + numbers[0]); //
+// Pass by Value (Değer ile Geçiş) => Primitive tipler (int, double, boolean, char) ve String gibi immutable tipler için geçerlidir.
+// Methodlara argüman olarak verilen değerlerin kopyası oluşturulur ve method içinde yapılan değişiklikler orijinal değeri etkilemez
+// Referans tipler (Arrays, Objects) için geçerli değildir. Methodlara argüman olarak verilen referansların kopyası oluşturulur ancak bu referanslar aynı nesneyi işaret eder.
+// Bu nedenle method içinde yapılan değişiklikler orijinal nesneyi etkiler.
+numbers[0] = 100; // Diziler mutable (değiştirilebilir) olduğu için orijinal dizi değişir
+
+---
+
+File: [intro/src/main/java/com/turkcell/Interfaces.java](intro/src/main/java/com/turkcell/Interfaces.java)
+CarRepository carRepository = new PgCarRepository(); // Sol taraf CarRepository kurallarına uyan somut bir class, sağ taraf ise bu kurallara uyan bir nesne.
+/*
+Yeni bir proje oluşturmak (Aynı klasör içinde olabilir)
+isim: Bankingapplication
+
+Banka uygulaması => İçerik tamamen size ait.
+Min 3+ özellik. (Hesap özeti görme, veritabanı görme, müşteri olma vb.)
+In-Memory Repository => Veriler RAM'de tutulabilir
+Tek bir main classda simülasyon yeterli.
+Console üzerinden çalışacak.
+
+Çarşamba ders saatine kadar github teslimi.
+*/ (multi-line block)
+
+---
+
+File: [intro/src/main/java/com/turkcell/OOP.java](intro/src/main/java/com/turkcell/OOP.java)
+// new => yeni bir instace oluşturma keyword'ü
+// Car sınıfından bir nesne oluşturma, constructor'ı çağırma
+String[] x = car1.getSpecs();
+// specs dizisinin ilk elemanını değiştirme
+System.out.println(car1.getSpecs()[0]); // specs dizisinin ilk elemanını yazdırma
+System.out.println(car1.getBrand()); // Get işlemi (değer okuma)
+// Car sınıfının constructor'ında brand'i
+
+---
+
+File: [intro/src/main/java/com/turkcell/Main.java](intro/src/main/java/com/turkcell/Main.java)
+// Entrypoint
+// Programlama konseptleri
+// Scope Kavramı -> {} kapsama alanı
+/* Değişkenler (Variables)
+
+        Kodun akışında değer tutan isimli verilerdir 
+
+         */ (multi-line block)
+// Tanımlandıktan itibaren değişebilir, erişilebilir ve kullanılabilirler
+// Değişken tipleri => int, double, boolean, char, String
+// Diziler (Arrays)
+System.out.println(names[0]); // Tamer
+// Primitive (ilkel) tipler -> int, double, boolean, char
+// Non-primitive (nesne) tipler -> Referans Tipler -> String, Arrays, Objects
+System.out.println(c[3]);
+System.out.println(d[3]);
+System.out.println(str1 == str2); // true (String havuzu (pool) nedeniyle)
+// Aynı metinleri bir havuzda tutar ve aynı referansı paylaşır
+System.out.println(str1.equals(str2)); // true (değer karşılaştırması)
+System.out.println(str3 == str4); // true (intern() ile havuzdaki referansı kullanır)
+// Döngüler (Loops)
+// X işlemini birden fazla kez çalıştırmak istediğimizde kullanırız
+// i (iteration = yenileme) genellikle 0'dan başlar ve belirli bir koşula kadar devam eder
+System.out.println("Öğrenci: " + students[i]);
+whileCounter++; 
+String name3 = name2.concat("abc");
+// String immutable (değiştirilemez) bir yapıya sahiptir.
+// concat() gibi metotlar yeni bir String oluşturur, mevcut String'i değiştirmez.
+// Karar Blokları & Döngüler
+// Belirtli 1+ kapsamdaki kod bloklarının çalıştırılmasını sağlarlar
+// Karar bloğu = minimum 1, maximum n adet karara göre farklı kod bloklarının çalıştırabilir
+// Koşul: true/false döndüren bir ifade
+// Her koşul bloğu yalnızca 1 scope (kapsama alanı) çalıştırır.
+// Kodlar yukarıdan aşağıya doğru okunur ve çalıştırılır. Koşullar sırayla kontrol edilir ve ilk true olan bloğun kodu çalıştırılır, diğer bloklar atlanır.
+// Methodlar (Functions) => Belirli bir görevi yerine getiren kod bloklarıdır. Tekrar kullanılabilirler ve programın farklı yerlerinden çağrılabilirler.
+// Erişim belirticileri (Access Modifiers) => public, private, protected, default
+// Dönüş Tipleri (Return Types) => void, int, String, boolean, vs.
+// Method İsimleri => camelCase (örneğin: calculateGrade)
+// Parametreler (Parameters) => Methodun çalışması için gereken bilgileri sağlarlar. Methodun parantezleri içinde tanımlanırlar.
+// Required Parameters (Zorunlu Parametreler)
+// studentName parametresi olmadan da not hesaplamak isteyebiliriz, bu durumda studentName parametresini opsiyonel (isteğe bağlı) yapabiliriz.
+// Method Overloading (Aşırı Yükleme) => Aynı isimde ancak farklı parametre listesine sahip birden fazla method tanımlama tekniğidir. Bu sayede aynı işlemi farklı şekillerde gerçekleştirebiliriz.
+// Overloading (Aşırı Yükleme)
+// Varargs (Değişken Sayıda Parametre) - (JS spread operator'üne benzer)
+// Main classının kapsama alanı (sınır)
+
+---
+
+File: [spring-starter/src/main/java/com/turkcell/spring_starter/SpringStarterApplication.java](spring-starter/src/main/java/com/turkcell/spring_starter/SpringStarterApplication.java)
+@SpringBootApplication // Anatation => Bulunduğu class, fonk, değişkene özellik kazandıran yapıdır. SpringBootApplication => Spring Boot uygulaması olduğunu belirtir.
+// Entrypoint => Uygulamanın başlangıç noktasıdır. Uygulama çalıştığında ilk olarak main metodu çalışır.
+
+---
+
+File: [spring-starter/src/main/java/com/turkcell/spring_starter/controller/ProductController.java](spring-starter/src/main/java/com/turkcell/spring_starter/controller/ProductController.java)
+/*
+@RestController
+@RequestMapping("/api/product") // localhost:8080/api/products -> bu endpoint'e istek geldiğinde bu controller çalışır. ProductController
+// Bu class bir reset controller olduğunu belirtir. Yani bu class HTTP isteklerini karşılamak için kullanılır.
+public class ProductController {
+    // Kullanıcı ne zaman /api/products endpoint'ine bir GET isteği gönderirse, bu method çalışır ve cevap döner.
+    // /api/product -> sayHi(); matchle
+
+    // HTTP Method: GET, POST, PUT, DELETE, PATCH
+    @GetMapping("") //Controllerın uzantısı + get'in uzantısı -> /api/product
+    public String sayHi(String name, int age) {
+        return "Hi, " + name + "! You are " + age + " years old."; // localhost:8080/api/product?name=Tamer&age=23 -> Hi, Tamer! You are 23 years old.
+    }
+
+    // Controllerın uzantısı + get'in uzantısı -> /api/product/hello/{name}
+    @GetMapping("hello/{name}/{age}") // localhost:8080/api/product/hello/Tamer/23 -> Hello, Tamer! I'm ProductController
+    public String sayHello(@PathVariable String name, @PathVariable int age) {
+        return "Hello, " + name + "! I'm ProductController" + " and you are " + age + " years old.";
+    }
+
+    @PostMapping
+    public Product add(@RequestBody Product product){ // Json->Java objesine çevirir. İstek gövdesinde (body) bir Product objesi bekler.
+        // isim 1 haneden uzun mu?
+        // fiyat..
+        // DB'e kaydet..
+
+        return product;
+    }
+    
+
+
+}
+*/ (multi-line block)
+// Altın Kural: Veritabanı nesneleri requestte de response'ta da kullanılmaz. DTO (Data Transfer Object) kullanılır. ProductRequest, ProductResponse gibi. Ancak şimdilik basit olması açısından direkt Product kullanacağız.
+// In-Memory Çalış..
+// Veritabanındaki Productları nesnelerini listele
+// Listeden id == product.getId() ise onu yoksa null dön.
+// Request-Response Pattern => İstek ve cevap arasında bir sözleşme vardır.
+// İstek ve cevap nesneleri genellikle birbirinden farklıdır.
+// Bu yüzden DTO kullanılır.
+// Birebir başka bir istek-cevap çiftiyle aynı içeriğe sahip olabilirler ancak isimleri farklıdır.
+// ProductForCreateDto, ProductForUpdateDto gibi.
+// Veritabanına product nesnesini ekle..
+// Sen dışardan ProductForCreateDto alıyosun
+// ama veritabanı Product ile çalışıyor
+// Transfer => MANUAL MAPPING
+// Auto Increment gibi çalışır. Ancak gerçek bir veritabanında bu işi veritabanı yapar.
+// Domain Nesnesi -> Dto
+// Ben controller olarak iş kodunu çalıştıramam, ama bunu yapmam gerekli...
+// İş kodunu çalıştıracak olan yapıya BAĞLIYIM. O yapıya da SERVICE denir.
+// Service, controller ile repository arasında bir köprü görevi görür. Controller, HTTP isteklerini karşılar ve Service'i çağırır.
+// Service ise, iş mantığını içerir ve Repository'yi çağırarak veritabanı işlemlerini yapar.
+// Repository ise, veritabanı ile iletişim kurar ve CRUD işlemlerini gerçekleştirir.
+// Bu katmanlı mimari, uygulamanın daha düzenli ve maintainable olmasını sağlar.
+///..
+///.. Todo..
+// DTO => Data Transfer Object. Veritabanı nesneleri requestte de response'ta da kullanılmaz. DTO (Data Transfer Object) kullanılır.
+// ProductRequest, ProductResponse gibi. Ancak şimdilik basit olması açısından direkt Product kullanacağız.
+// Entity ile X (Controller, service) arası veri transferi için oluşturulan sınıflardır.
+
+---
+
+File: [spring-starter/src/main/java/com/turkcell/spring_starter/service/ProductSerciveImpl.java](spring-starter/src/main/java/com/turkcell/spring_starter/service/ProductSerciveImpl.java)
+// Implementation sınıfı, interface'i implement eder. Yani ProductService interface'inde tanımlanan methodları burada implement ederiz. Bu sınıf, iş mantığını içerir. Veritabanı işlemleri, hesaplamalar, doğrulamalar gibi işlemler burada yapılır.
+// IProductService yerine ProductService olur
+// ProductServiceImpl
+// Controllerın çağırdığı methodları burada implement ederiz.
+// Örneğin createProduct, getAllProducts, getProductById, updateProduct, deleteProduct gibi methodlar olabilir.
+// Bu methodlar, controller tarafından çağrılır ve gerekli işlemleri yapar.
+// Auto-Generated
+// Spring IoC nedir? Bean, Service nedir?
+// Spring IoC Container, uygulamanın ihtiyaç duyduğu nesneleri yönetir ve oluşturur.
+// Bean, Spring tarafından yönetilen bir nesnedir. Service ise, iş mantığını içeren sınıflardır.
+// Controller, Service, Repository gibi katmanlarda kullanılırlar. Controller, HTTP isteklerini karşılar ve Service'i çağırır.
+// Service ise, iş mantığını içerir ve Repository'yi çağırarak veritabanı işlemlerini yapar.
+// Repository ise, veritabanı ile iletişim kurar ve CRUD işlemlerini gerçekleştirir.
+// Bu katmanlı mimari, uygulamanın daha düzenli ve maintainable olmasını sağlar.
+
+
+---
+
+// (Pazartesi 13 Nisan - HTTP İsteğinin anatomisi hakkında bir .md dosyası hazırlamak)
