@@ -99,6 +99,15 @@ public class ProductController {
         response.setPrice(product.getPrice());
 
         return response;
+
+        // Ben controller olarak iş kodunu çalıştıramam, ama bunu yapmam gerekli...
+        // İş kodunu çalıştıracak olan yapıya BAĞLIYIM. O yapıya da SERVICE denir. 
+        // Service, controller ile repository arasında bir köprü görevi görür. Controller, HTTP isteklerini karşılar ve Service'i çağırır. 
+        // Service ise, iş mantığını içerir ve Repository'yi çağırarak veritabanı işlemlerini yapar. 
+        // Repository ise, veritabanı ile iletişim kurar ve CRUD işlemlerini gerçekleştirir. 
+        // Bu katmanlı mimari, uygulamanın daha düzenli ve maintainable olmasını sağlar.
+
+        
     }
     @PutMapping
     public void updateProduct(@RequestBody Product product) {
@@ -116,5 +125,6 @@ public class ProductController {
     }
 }
 
-// DTO => Data Transfer Object. Veritabanı nesneleri requestte de response'ta da kullanılmaz. DTO (Data Transfer Object) kullanılır. ProductRequest, ProductResponse gibi. Ancak şimdilik basit olması açısından direkt Product kullanacağız.
+// DTO => Data Transfer Object. Veritabanı nesneleri requestte de response'ta da kullanılmaz. DTO (Data Transfer Object) kullanılır. 
+// ProductRequest, ProductResponse gibi. Ancak şimdilik basit olması açısından direkt Product kullanacağız.
 // Entity ile X (Controller, service) arası veri transferi için oluşturulan sınıflardır.
