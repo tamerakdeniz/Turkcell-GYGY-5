@@ -81,6 +81,16 @@ public class ProductController {
     public ProductCreatedResponse createProduct(@RequestBody ProductForCreateDto productDto) {
         // Veritabanına product nesnesini ekle..
 
+        // VALIDASYON: İsim 1 haneden uzun mu?
+        if (productDto.getName() == null || productDto.getName().length() <= 1) {
+            throw new IllegalArgumentException("Ürün adı en az 2 karakterden oluşmalıdır.");
+        }
+
+        // VALIDASYON: Fiyat geçerli mi?
+        if (productDto.getPrice() == null || productDto.getPrice() <= 0) {
+            throw new IllegalArgumentException("Ürün fiyatı 0'dan büyük olmalıdır.");
+        }
+
         // Sen dışardan ProductForCreateDto alıyosun 
         // ama veritabanı Product ile çalışıyor
 
@@ -90,6 +100,7 @@ public class ProductController {
         product.setPrice(productDto.getPrice());
         product.setId(productList.size() + 1); // Auto Increment gibi çalışır. Ancak gerçek bir veritabanında bu işi veritabanı yapar.
 
+        // DB'e kaydet (simüle edilmiş In-Memory storage)
         productList.add(product);
 
         // Domain Nesnesi -> Dto

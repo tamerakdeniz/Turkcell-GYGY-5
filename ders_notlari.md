@@ -220,10 +220,11 @@ public class ProductForCreateDto {
   }
   ```
 
-### Todo ve Eksik Noktalar
-- **ProductController'da:** "// isim 1 haneden uzun mu? // fiyat.. // DB'e kaydet.." - Validasyon ve DB işlemleri eksik. Spring Validation ve JPA öğren.
-- **Service'de:** "//.. Todo.." - Tam implementasyon eksik. CRUD methodları ekle.
-- **HTTP Anatomisi:** "(Pazartesi 13 Nisan - HTTP İsteğinin anatomisi hakkında bir .md dosyası hazırlamak)" - HTTP request yapısını (headers, body, methods) araştır ve .md dosyası hazırla.
+### Todo ve Eksik Noktalar (✅ TAMAMLANDI)
+
+- **ProductController'da:** ✅ Validasyon ve DB işlemleri tamamlandı. ürün adı en az 2 karakterden oluşmalı, fiyat 0'dan büyük olmalı kontrolü eklendi.
+- **Service'de:** ✅ ProductService interface'i ve ProductServiceImpl implementasyonu tamamlandı. Tüm CRUD (Create, Read, Update, Delete) methodları eklendi.
+- **HTTP Anatomisi:** ✅ Kapsamlı HTTP İsteğinin Anatomisi dokümantasyonu hazırlandı. HTTP protokolü, istek/yanıt yapısı, metodlar, durum kodları, URL yapısı, HTTPS/TLS, HTTP versiyonları, pratik örnekler ve Spring Boot entegrasyonu hakkında detaylı bilgiler içerir.
 
 ## 5. Öğrenilmesi Gereken Ek Noktalar
 - **String Pool:** String'lerin bellekte nasıl tutulduğu. `==` vs `equals()`.
