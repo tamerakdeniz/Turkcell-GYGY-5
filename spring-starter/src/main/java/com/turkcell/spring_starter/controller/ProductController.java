@@ -10,6 +10,8 @@ import com.turkcell.spring_starter.dto.ProductCreatedResponse;
 import com.turkcell.spring_starter.dto.ProductForCreateDto;
 import com.turkcell.spring_starter.service.ProductServiceImpl;
 
+import jakarta.validation.Valid;
+
 // Altın kural: Veritabanı nesneleri requestte de responseda da kullanılamaz.
 @RestController // Uygulamada gerektiğinde controlleri newle.
 @RequestMapping("/api/product") 
@@ -24,7 +26,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public ProductCreatedResponse create(@RequestBody ProductForCreateDto productDto) {
+    public ProductCreatedResponse create(@RequestBody @Valid ProductForCreateDto productDto) {
         return this.productServiceImpl.create(productDto);
     }
 }

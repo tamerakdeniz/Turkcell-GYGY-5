@@ -136,7 +136,12 @@ public class ProductServiceImpl {
 
     public ProductCreatedResponse create(ProductForCreateDto productDto)
     {
+        // Aynı isimde 2 ürün olamaz
 
+        // Business Rule
+
+        checkIfProductWithSameNameExist(productDto.getName());
+        
         Product product = new Product();
         product.setName(productDto.getName());
         product.setPrice(productDto.getPrice());
@@ -150,6 +155,23 @@ public class ProductServiceImpl {
         response.setPrice(product.getPrice());
 
         return response;
+    }
+
+    public void update() {
+        // Aynı iş kuralı..
+        checkIfProductWithSameNameExist("");
+    }
+
+    // İş kuralları -> Kendine has bir classta bulunmalıdır. -> ProductBusinessRules.java
+    private void checkIfProductWithSameNameExist(String name) {
+        Product productWithSameName = productsInMemory
+                                        .stream()
+                                        .filter(product->product.getName().equals(name))
+                                        .findFirst()
+                                        .orElse(null);
+
+        if(productWithSameName != null)
+            throw new RuntimeException("Aynı isimde 2 ürün eklenemez");
     }
 }
 
