@@ -175,6 +175,8 @@ public class ProductServiceImpl {
     }
 }
 
+// https://prnt.sc/akwq9TU6YxRC
+
 // Auto-generated
 
 // IProductRepository -> ProductRepository
