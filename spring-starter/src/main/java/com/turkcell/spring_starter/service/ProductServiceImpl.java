@@ -1,3 +1,5 @@
+/* 
+
 package com.turkcell.spring_starter.service;
 
 import java.util.ArrayList;
@@ -105,3 +107,57 @@ public class ProductSerciveImpl implements ProductService {
 // Service ise, iş mantığını içerir ve Repository'yi çağırarak veritabanı işlemlerini yapar. 
 // Repository ise, veritabanı ile iletişim kurar ve CRUD işlemlerini gerçekleştirir. 
 // Bu katmanlı mimari, uygulamanın daha düzenli ve maintainable olmasını sağlar.
+
+*/
+
+package com.turkcell.spring_starter.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import org.springframework.stereotype.Service;
+
+import com.turkcell.spring_starter.dto.ProductCreatedResponse;
+import com.turkcell.spring_starter.dto.ProductForCreateDto;
+import com.turkcell.spring_starter.model.Product;
+
+// Implementation
+// IProductService ❌
+// ProductService ✔
+// ProductServiceImpl ✔
+@Service // IoC'e bu türü ekledin.
+public class ProductServiceImpl {
+    // Controller'ın size aktaracağı işleri tanımla.
+    // iş kodu..
+
+    // repo
+    private final List<Product> productsInMemory = new ArrayList<>();
+
+    public ProductCreatedResponse create(ProductForCreateDto productDto)
+    {
+
+        Product product = new Product();
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setId(new Random().nextInt(999));
+
+        productsInMemory.add(product); // repo
+
+        ProductCreatedResponse response = new ProductCreatedResponse();
+        response.setId(product.getId());
+        response.setName(product.getName());
+        response.setPrice(product.getPrice());
+
+        return response;
+    }
+}
+
+// Auto-generated
+
+// IProductRepository -> ProductRepository
+
+// ProductRepository <Product> -> Spring auto-generated.
+
+// Spring IoC Nedir? Bean,Service nedir? 
+
