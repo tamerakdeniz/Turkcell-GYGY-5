@@ -755,6 +755,7 @@ INSERT INTO ogrenci (ogrenci_no, tc_kimlik, ad, soyad, email, telefon, adres, do
 ('20240009', '12345678909', 'Emre',   'Yıldız', 'emre.yildiz@ogr.edu.tr',  '05329990011', 'Beykoz, İstanbul',   '2004-06-22', 'E');
 
 -- BÖLÜM 4: KONTROL SORGUSU - Tüm Tabloların Kayıt Sayısı
+-- =============================================================
 SELECT 'yayinevi'       AS tablo, COUNT(*) AS kayit FROM yayinevi
 UNION ALL SELECT 'kategori',       COUNT(*) FROM kategori
 UNION ALL SELECT 'kitap',          COUNT(*) FROM kitap
