@@ -26,7 +26,6 @@ DROP TABLE IF EXISTS gorevli_yetki CASCADE;
 DROP TABLE IF EXISTS yetki CASCADE;
 DROP TABLE IF EXISTS gorevli CASCADE;
 DROP TABLE IF EXISTS ogrenci CASCADE;
-DROP TABLE IF EXISTS bolum CASCADE;
 DROP TABLE IF EXISTS kitap_yazar CASCADE;
 DROP TABLE IF EXISTS yazar CASCADE;
 DROP TABLE IF EXISTS kitap_kategori CASCADE;
@@ -155,17 +154,7 @@ CREATE TABLE kitap_yazar (
 
 
 -- -----------------------------------------------------------
--- 8. BOLUM
--- -----------------------------------------------------------
-CREATE TABLE bolum (
-    bolum_id   SERIAL PRIMARY KEY,
-    ad         VARCHAR(100) NOT NULL,
-    fakulte    VARCHAR(100) NOT NULL
-);
-
-
--- -----------------------------------------------------------
--- 9. OGRENCI
+-- 8. OGRENCI
 -- -----------------------------------------------------------
 CREATE TABLE ogrenci (
     ogrenci_id     SERIAL PRIMARY KEY,
@@ -178,18 +167,13 @@ CREATE TABLE ogrenci (
     adres          VARCHAR(300),
     dogum_tarihi   DATE NOT NULL,
     cinsiyet       CHAR(1) CHECK (cinsiyet IN ('E','K','D')),
-    bolum_id       INT NOT NULL,
     kayit_tarihi   DATE DEFAULT CURRENT_DATE,
-    aktif_mi       BOOLEAN DEFAULT TRUE,
-    CONSTRAINT fk_ogrenci_bolum
-        FOREIGN KEY (bolum_id)
-        REFERENCES bolum(bolum_id)
-        ON DELETE RESTRICT
+    aktif_mi       BOOLEAN DEFAULT TRUE
 );
 
 
 -- -----------------------------------------------------------
--- 10. GOREVLI
+-- 9. GOREVLI
 -- -----------------------------------------------------------
 CREATE TABLE gorevli (
     gorevli_id            SERIAL PRIMARY KEY,
@@ -209,7 +193,7 @@ CREATE TABLE gorevli (
 
 
 -- -----------------------------------------------------------
--- 11. YETKI
+-- 10. YETKI
 -- -----------------------------------------------------------
 CREATE TABLE yetki (
     yetki_id    SERIAL PRIMARY KEY,
