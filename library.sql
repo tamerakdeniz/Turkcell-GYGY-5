@@ -437,3 +437,336 @@ INSERT INTO rezervasyon (ogrenci_id, kitap_id, rezervasyon_tarihi, son_gecerlili
 (2, 6, '2026-04-15 09:15:00', '2026-04-22', 'bekliyor'),
 (6, 4, '2026-04-05 11:00:00', '2026-04-12', 'iptal'),
 (1, 7, '2026-04-20 16:45:00', '2026-04-27', 'bekliyor');
+
+-- BÖLÜM 3: EK DML SORGULARI (Derste İşlenen Konular + Türevleri)
+
+-- 3.1 SELECT - Temel Sorgular
+-- * ile tüm kolonlar (ALL)
+SELECT * FROM yayinevi;
+SELECT * FROM kitap;
+SELECT * FROM ogrenci;
+SELECT * FROM gorevli;
+SELECT * FROM odunc_alma;
+-- Belirli kolonları seçme
+SELECT kitap_id, baslik FROM kitap;
+SELECT ad, soyad, email FROM ogrenci;
+SELECT baslik, yayin_yili, sayfa_sayisi FROM kitap;
+
+-- Kolon birleştirme (concat) ve takma ad (AS)
+SELECT ogrenci_no, ad || ' ' || soyad AS tam_ad FROM ogrenci;
+SELECT baslik AS kitap_adi, yayin_yili AS yil FROM kitap;
+
+
+-- 3.2 WHERE - Filtreleme
+-- Eşitlik (=)
+SELECT * FROM ogrenci WHERE cinsiyet = 'E';
+SELECT * FROM ogrenci WHERE cinsiyet = 'K';
+SELECT * FROM kitap_kopya WHERE durum = 'musait';
+SELECT * FROM odunc_alma WHERE durum = 'gecikmis';
+SELECT * FROM gorevli WHERE pozisyon = 'yonetici';
+-- Karşılaştırma (<, >, <=, >=, !=)
+SELECT * FROM kitap WHERE yayin_yili > 2000;
+SELECT * FROM kitap WHERE yayin_yili < 1950;
+SELECT * FROM kitap WHERE sayfa_sayisi >= 500;
+SELECT * FROM gorevli WHERE maas <= 20000;
+SELECT * FROM ogrenci WHERE cinsiyet != 'E';
+-- Boolean
+SELECT * FROM ogrenci WHERE aktif_mi = TRUE;
+SELECT * FROM ogrenci WHERE aktif_mi = FALSE;
+SELECT * FROM ceza WHERE odendi_mi = FALSE;
+-- AND / OR / NOT
+SELECT * FROM ogrenci WHERE cinsiyet = 'K' AND aktif_mi = TRUE;
+SELECT * FROM kitap WHERE yayin_yili > 1950 AND sayfa_sayisi > 300;
+SELECT * FROM gorevli WHERE pozisyon = 'memur' OR pozisyon = 'yonetici';
+SELECT * FROM ogrenci WHERE NOT cinsiyet = 'E';
+-- IS NULL / IS NOT NULL
+SELECT * FROM yazar WHERE olum_tarihi IS NULL;        -- yaşayan yazarlar
+SELECT * FROM yazar WHERE olum_tarihi IS NOT NULL;    -- vefat etmiş yazarlar
+SELECT * FROM ceza WHERE odeme_tarihi IS NULL;        -- henüz ödenmemiş
+SELECT * FROM kategori WHERE ust_kategori_id IS NULL; -- kök kategoriler
+-- BETWEEN - Aralık sorgusu
+SELECT * FROM kitap WHERE yayin_yili BETWEEN 1900 AND 2000;
+SELECT * FROM gorevli WHERE maas BETWEEN 20000 AND 40000;
+SELECT * FROM kitap_kopya WHERE fiyat BETWEEN 50 AND 100;
+-- IN / NOT IN
+SELECT * FROM gorevli WHERE pozisyon IN ('memur', 'stajyer');
+SELECT * FROM kitap_kopya WHERE durum IN ('kayip', 'hasarli');
+SELECT * FROM odunc_alma WHERE durum IN ('aktif', 'gecikmis');
+SELECT * FROM ogrenci WHERE cinsiyet NOT IN ('E');
+
+-- 3.3 ORDER BY - Sıralama (ASC / DESC)
+-- ASC -> Ascending (küçükten büyüğe) - varsayılan
+SELECT * FROM kitap ORDER BY yayin_yili ASC;
+SELECT * FROM kitap ORDER BY baslik;            -- ASC yazmasak da varsayılan
+SELECT * FROM ogrenci ORDER BY ad, soyad;
+-- DESC -> Descending (büyükten küçüğe)
+SELECT * FROM kitap ORDER BY yayin_yili DESC;
+SELECT * FROM gorevli ORDER BY maas DESC;
+SELECT * FROM ogrenci ORDER BY kayit_tarihi DESC;
+SELECT * FROM kitap ORDER BY sayfa_sayisi DESC;
+-- Birden çok kolona göre sıralama
+SELECT * FROM ogrenci ORDER BY cinsiyet ASC, soyad DESC;
+SELECT * FROM gorevli ORDER BY pozisyon, maas DESC;
+-- WHERE + ORDER BY
+SELECT * FROM kitap WHERE yayin_yili > 1950 ORDER BY sayfa_sayisi DESC;
+
+-- 3.4 LIMIT / OFFSET - Kayıt Sınırlama & Sayfalama
+-- İlk 5 kayıt
+SELECT * FROM kitap LIMIT 5;
+-- En pahalı 3 kopya
+SELECT * FROM kitap_kopya ORDER BY fiyat DESC LIMIT 3
+-- En yüksek maaşlı görevli
+SELECT * FROM gorevli ORDER BY maas DESC LIMIT 1;
+-- Sayfalama (2. sayfa - 5'erli)
+SELECT * FROM kitap ORDER BY kitap_id LIMIT 5 OFFSET 5;
+
+-- 3.5 AGGREGATE FONKSIYONLAR (COUNT, MIN, MAX, AVG, SUM)
+-- COUNT -> Bir tablodaki veri sayısı
+SELECT COUNT(*) AS toplam_kitap FROM kitap;
+SELECT COUNT(*) AS toplam_ogrenci FROM ogrenci;
+SELECT COUNT(*) AS aktif_ogrenci FROM ogrenci WHERE aktif_mi = TRUE;
+SELECT COUNT(*) AS kadin_ogrenci FROM ogrenci WHERE cinsiyet = 'K';
+SELECT COUNT(*) AS musait_kopya FROM kitap_kopya WHERE durum = 'musait';
+SELECT COUNT(DISTINCT yayinevi_id) AS farkli_yayinevi FROM kitap;
+-- MIN -> Bir kolondaki min değer
+SELECT MIN(yayin_yili) AS en_eski_kitap_yili FROM kitap;
+SELECT MIN(maas) AS en_dusuk_maas FROM gorevli;
+SELECT MIN(sayfa_sayisi) AS en_kisa_kitap FROM kitap;
+SELECT MIN(ceza_miktari) AS en_dusuk_ceza FROM ceza;
+SELECT MIN(fiyat) AS en_ucuz_kopya FROM kitap_kopya;
+-- MAX -> Bir kolondaki max değer
+SELECT MAX(yayin_yili) AS en_yeni_kitap_yili FROM kitap;
+SELECT MAX(maas) AS en_yuksek_maas FROM gorevli;
+SELECT MAX(sayfa_sayisi) AS en_uzun_kitap FROM kitap;
+SELECT MAX(ceza_miktari) AS en_yuksek_ceza FROM ceza;
+SELECT MAX(fiyat) AS en_pahali_kopya FROM kitap_kopya;
+-- AVG -> Bir kolondaki ortalama değer
+SELECT AVG(sayfa_sayisi) AS ortalama_sayfa FROM kitap;
+SELECT AVG(maas) AS ortalama_maas FROM gorevli;
+SELECT AVG(fiyat) AS ortalama_fiyat FROM kitap_kopya;
+SELECT AVG(ceza_miktari) AS ortalama_ceza FROM ceza;
+-- SUM -> Bir kolondaki tüm değerleri topla
+SELECT SUM(ceza_miktari) AS toplam_ceza_tutari FROM ceza;
+SELECT SUM(ceza_miktari) AS odenmemis_toplam FROM ceza WHERE odendi_mi = FALSE;
+SELECT SUM(fiyat) AS kutuphane_toplam_deger FROM kitap_kopya;
+SELECT SUM(maas) AS aylik_personel_gider FROM gorevli WHERE aktif_mi = TRUE;
+SELECT SUM(sayfa_sayisi) AS toplam_sayfa FROM kitap;
+-- Tüm istatistikler
+SELECT
+    COUNT(*)   AS gorevli_sayisi,
+    MIN(maas)  AS en_dusuk_maas,
+    MAX(maas)  AS en_yuksek_maas,
+    AVG(maas)  AS ortalama_maas,
+    SUM(maas)  AS toplam_maas
+FROM gorevli;
+
+-- 3.6 LIKE / ILIKE - Pattern Matching (Kalıp Eşleme)
+-- Sembol 1 -> % (herhangi sayıda karakter)
+-- 'S' ile başlayan kitaplar
+SELECT * FROM kitap WHERE baslik LIKE 'S%';
+-- 'r' ile biten kitaplar
+SELECT * FROM kitap WHERE baslik LIKE '%r';
+-- İçinde 'ce' geçen kitaplar
+SELECT * FROM kitap WHERE baslik LIKE '%ce%';
+-- 'A' ile başlayan öğrenci adları
+SELECT * FROM ogrenci WHERE ad LIKE 'A%';
+-- İçinde 'e' olan öğrenci adları
+SELECT * FROM ogrenci WHERE ad LIKE '%e%';
+-- '@ogr.edu.tr' ile biten emailler
+SELECT * FROM ogrenci WHERE email LIKE '%@ogr.edu.tr';
+-- '2023' ile başlayan öğrenci numaraları (2023 girişliler)
+SELECT * FROM ogrenci WHERE ogrenci_no LIKE '2023%';
+
+-- Sembol 2 -> _ (tek karakter)
+-- 2. harfi 'h' olan isimler (Ahmet, Zehra vb.)
+SELECT * FROM ogrenci WHERE ad LIKE '_h%';
+-- Sondan bir önceki harfi 'a' olan isimler
+SELECT * FROM ogrenci WHERE ad LIKE '%a_';
+-- 4 karakterli isimler
+SELECT * FROM ogrenci WHERE ad LIKE '____';
+-- ILIKE -> Büyük/küçük harf duyarsız (LOWER + LIKE ile aynı)
+SELECT * FROM kitap WHERE baslik ILIKE '%CEZA%';
+SELECT * FROM kitap WHERE baslik ILIKE '%sapiens%';
+SELECT * FROM yazar WHERE uyruk ILIKE 'rus';
+SELECT * FROM ogrenci WHERE ad ILIKE '%er%';
+-- NOT LIKE - uygun olmayanlar
+SELECT * FROM kitap WHERE baslik NOT LIKE '%ceza%';
+SELECT * FROM ogrenci WHERE email NOT LIKE '%@ogr.edu.tr';
+
+-- 3.7 DISTINCT - Tekil (Benzersiz) Değerler
+SELECT DISTINCT dil       FROM kitap;
+SELECT DISTINCT uyruk     FROM yazar;
+SELECT DISTINCT pozisyon  FROM gorevli;
+SELECT DISTINCT durum     FROM kitap_kopya;
+SELECT DISTINCT cinsiyet  FROM ogrenci;
+SELECT DISTINCT modul     FROM yetki;
+
+-- 3.8 UPDATE - Veri Güncelleme
+-- Tek alanı güncelleme
+UPDATE ogrenci
+SET telefon = '05551234567'
+WHERE ogrenci_id = 1;
+-- Birden çok alanı güncelleme
+UPDATE ogrenci
+SET telefon = '05559998877', adres = 'Yeni Adres, İstanbul'
+WHERE ogrenci_id = 2;
+-- Kayıp kitap kopyasının durumunu güncelle
+UPDATE kitap_kopya
+SET durum = 'kayip'
+WHERE kopya_id = 7;
+-- Tüm memurlara %10 zam
+UPDATE gorevli
+SET maas = maas * 1.10
+WHERE pozisyon = 'memur';
+-- Cezayı ödendi olarak işaretle
+UPDATE ceza
+SET odendi_mi = TRUE, odeme_tarihi = CURRENT_DATE
+WHERE ceza_id = 2;
+-- Gecikmiş ödünçlerin durumunu otomatik güncelle
+UPDATE odunc_alma
+SET durum = 'gecikmis'
+WHERE iade_tarihi_beklenen < CURRENT_DATE
+  AND durum = 'aktif';
+-- Öğrenciyi pasif yap (mezun olan)
+UPDATE ogrenci
+SET aktif_mi = FALSE
+WHERE ogrenci_id = 7;
+-- Email'i toplu güncelleme - domain değişikliği
+UPDATE ogrenci
+SET email = REPLACE(email, '@ogr.edu.tr', '@ogrenci.uni.edu.tr')
+WHERE email LIKE '%@ogr.edu.tr';
+
+-- 3.9 DELETE - Veri Silme
+-- İptal edilmiş rezervasyonları sil
+DELETE FROM rezervasyon WHERE durum = 'iptal';
+-- Geçmiş rezervasyonları sil
+DELETE FROM rezervasyon WHERE son_gecerlilik_tarihi < CURRENT_DATE;
+-- Çok düşük cezaları sil
+DELETE FROM ceza WHERE ceza_miktari < 5 AND odendi_mi = TRUE;
+-- Belirli bir ID'yi sil (bağımlı yoksa çalışır)
+DELETE FROM rezervasyon WHERE rezervasyon_id = 4;
+-- FK RESTRICT hatası örneği (çalışmaz)
+DELETE FROM ogrenci WHERE ogrenci_id = 1;
+-- -> HATA: ogrenci_id=1 kayıdına odunc_alma ve rezervasyon tabloları bağlı
+
+-- 3.10 JOIN - Tablolar Arası Sorgu (BONUS)
+-- INNER JOIN - Kitap + Yayınevi
+SELECT k.baslik, y.ad AS yayinevi
+FROM kitap k
+INNER JOIN yayinevi y ON y.yayinevi_id = k.yayinevi_id;
+-- Kitap + Yazar
+SELECT k.baslik, y.ad || ' ' || y.soyad AS yazar
+FROM kitap k
+JOIN kitap_yazar ky ON ky.kitap_id = k.kitap_id
+JOIN yazar y        ON y.yazar_id  = ky.yazar_id;
+-- Kitap + Kategori (ana)
+SELECT k.baslik, kat.ad AS ana_kategori
+FROM kitap k
+JOIN kategori kat ON kat.kategori_id = k.kategori_id;
+-- Aktif ödünçler: Öğrenci + Kitap + Görevli
+SELECT
+    o.ad || ' ' || o.soyad AS ogrenci,
+    k.baslik AS kitap,
+    g.ad || ' ' || g.soyad AS odunc_veren_gorevli,
+    oa.odunc_tarihi::DATE AS odunc_gun,
+    oa.iade_tarihi_beklenen,
+    oa.durum
+FROM odunc_alma oa
+JOIN ogrenci o      ON o.ogrenci_id = oa.ogrenci_id
+JOIN kitap_kopya kk ON kk.kopya_id  = oa.kopya_id
+JOIN kitap k        ON k.kitap_id   = kk.kitap_id
+JOIN gorevli g      ON g.gorevli_id = oa.gorevli_id
+WHERE oa.durum IN ('aktif', 'gecikmis');
+
+-- LEFT JOIN - Tüm öğrenciler ve varsa ödünçleri
+SELECT o.ad, o.soyad, COUNT(oa.odunc_id) AS odunc_sayisi
+FROM ogrenci o
+LEFT JOIN odunc_alma oa ON oa.ogrenci_id = o.ogrenci_id
+GROUP BY o.ogrenci_id, o.ad, o.soyad;
+
+-- 3.11 GROUP BY / HAVING - Gruplama
+-- Cinsiyete göre öğrenci sayısı
+SELECT cinsiyet, COUNT(*) AS sayi
+FROM ogrenci
+GROUP BY cinsiyet;
+-- Pozisyona göre görevli ve ortalama maaş
+SELECT pozisyon, COUNT(*) AS sayi, AVG(maas) AS ort_maas
+FROM gorevli
+GROUP BY pozisyon
+ORDER BY ort_maas DESC;
+-- Her yayınevinin kitap sayısı
+SELECT y.ad AS yayinevi, COUNT(k.kitap_id) AS kitap_sayisi
+FROM yayinevi y
+LEFT JOIN kitap k ON k.yayinevi_id = y.yayinevi_id
+GROUP BY y.yayinevi_id, y.ad
+ORDER BY kitap_sayisi DESC;
+-- Her öğrencinin toplam cezası
+SELECT
+    o.ad || ' ' || o.soyad AS ogrenci,
+    SUM(c.ceza_miktari) AS toplam_ceza
+FROM ogrenci o
+JOIN ceza c ON c.ogrenci_id = o.ogrenci_id
+GROUP BY o.ogrenci_id, o.ad, o.soyad
+ORDER BY toplam_ceza DESC;
+-- HAVING -> gruplanmış veride filtre
+-- En az 2 kitabı olan yayınevleri
+SELECT y.ad, COUNT(k.kitap_id) AS kitap_sayisi
+FROM yayinevi y
+JOIN kitap k ON k.yayinevi_id = y.yayinevi_id
+GROUP BY y.yayinevi_id, y.ad
+HAVING COUNT(k.kitap_id) >= 2;
+-- Toplam cezası 50 TL üstü olan öğrenciler
+SELECT
+    o.ad || ' ' || o.soyad AS ogrenci,
+    SUM(c.ceza_miktari) AS toplam_ceza
+FROM ogrenci o
+JOIN ceza c ON c.ogrenci_id = o.ogrenci_id
+GROUP BY o.ogrenci_id, o.ad, o.soyad
+HAVING SUM(c.ceza_miktari) > 50;
+-- Durum bazlı kopya sayısı
+SELECT durum, COUNT(*) AS adet
+FROM kitap_kopya
+GROUP BY durum
+ORDER BY adet DESC;
+-- Uyruk bazlı yazar sayısı
+SELECT uyruk, COUNT(*) AS yazar_sayisi
+FROM yazar
+GROUP BY uyruk
+ORDER BY yazar_sayisi DESC;
+
+-- 3.12 EK INSERT ÖRNEKLERİ - Veri Zenginleştirme
+-- Yeni yayınevi
+INSERT INTO yayinevi (ad, adres, telefon, email, web_sitesi) VALUES
+('Everest Yayınları', 'Mecidiyeköy, İstanbul', '02122127500', 'info@everestyayinlari.com', 'www.everestyayinlari.com'),
+('Metis Yayınları',   'Beyoğlu, İstanbul',     '02122456688', 'info@metiskitap.com',       'www.metiskitap.com');
+-- Yeni kategori
+INSERT INTO kategori (ust_kategori_id, ad, aciklama) VALUES
+(NULL, 'Felsefe',    'Felsefi eserler'),
+(NULL, 'Psikoloji',  'Psikoloji kitapları'),
+(1,    'Şiir',       'Edebiyat > Şiir');
+-- Yeni yazar
+INSERT INTO yazar (ad, soyad, dogum_tarihi, uyruk, biyografi) VALUES
+('Albert',   'Camus',    '1913-11-07', 'Fransız', 'Fransız yazar ve filozof'),
+('Nazım',    'Hikmet',   '1902-01-15', 'Türk',    'Türk şair ve oyun yazarı'),
+('Orhan',    'Pamuk',    '1952-06-07', 'Türk',    'Nobel ödüllü Türk yazar');
+-- Yeni öğrenci
+INSERT INTO ogrenci (ogrenci_no, tc_kimlik, ad, soyad, email, telefon, adres, dogum_tarihi, cinsiyet) VALUES
+('20240008', '12345678908', 'Deniz',  'Arslan', 'deniz.arslan@ogr.edu.tr', '05328889900', 'Ataşehir, İstanbul', '2004-04-10', 'K'),
+('20240009', '12345678909', 'Emre',   'Yıldız', 'emre.yildiz@ogr.edu.tr',  '05329990011', 'Beykoz, İstanbul',   '2004-06-22', 'E');
+
+-- BÖLÜM 4: KONTROL SORGUSU - Tüm Tabloların Kayıt Sayısı
+SELECT 'yayinevi'       AS tablo, COUNT(*) AS kayit FROM yayinevi
+UNION ALL SELECT 'kategori',       COUNT(*) FROM kategori
+UNION ALL SELECT 'kitap',          COUNT(*) FROM kitap
+UNION ALL SELECT 'kitap_kopya',    COUNT(*) FROM kitap_kopya
+UNION ALL SELECT 'kitap_kategori', COUNT(*) FROM kitap_kategori
+UNION ALL SELECT 'yazar',          COUNT(*) FROM yazar
+UNION ALL SELECT 'kitap_yazar',    COUNT(*) FROM kitap_yazar
+UNION ALL SELECT 'ogrenci',        COUNT(*) FROM ogrenci
+UNION ALL SELECT 'gorevli',        COUNT(*) FROM gorevli
+UNION ALL SELECT 'yetki',          COUNT(*) FROM yetki
+UNION ALL SELECT 'gorevli_yetki',  COUNT(*) FROM gorevli_yetki
+UNION ALL SELECT 'odunc_alma',     COUNT(*) FROM odunc_alma
+UNION ALL SELECT 'iade',           COUNT(*) FROM iade
+UNION ALL SELECT 'ceza',           COUNT(*) FROM ceza
+UNION ALL SELECT 'rezervasyon',    COUNT(*) FROM rezervasyon;
