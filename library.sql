@@ -1,16 +1,8 @@
 -- =============================================================
 -- KÜTÜPHANE YÖNETİM SİSTEMİ - POSTGRESQL DDL + DML
 -- =============================================================
--- Veritabanı : library
--- Ortam      : Docker PostgreSQL
--- ER Diagram : library.drawio ile birebir uyumlu (15 tablo)
--- NOT        : BOLUM tablosu kaldırıldı (ER diagram güncellemesi)
--- =============================================================
 
-
--- =============================================================
 -- BÖLÜM 0: TABLOLARI TEMİZLEME (ters bağımlılık sırasıyla)
--- =============================================================
 
 DROP TABLE IF EXISTS rezervasyon    CASCADE;
 DROP TABLE IF EXISTS ceza           CASCADE;
@@ -29,16 +21,9 @@ DROP TABLE IF EXISTS kategori       CASCADE;
 DROP TABLE IF EXISTS yayinevi       CASCADE;
 
 
--- =============================================================
 -- BÖLÜM 1: DDL - TABLO OLUŞTURMA (CREATE TABLE)
--- =============================================================
 
-
--- -----------------------------------------------------------
 -- 1. YAYINEVI
--- ER: yayinevi_id(PK,int), ad(NN,varchar), adres(NULL,varchar),
---     telefon(NULL,varchar), email(NULL,varchar), web_sitesi(NULL,varchar)
--- -----------------------------------------------------------
 CREATE TABLE yayinevi (
     yayinevi_id SERIAL PRIMARY KEY,
     ad          VARCHAR(150) NOT NULL,
@@ -48,12 +33,7 @@ CREATE TABLE yayinevi (
     web_sitesi  VARCHAR(200)
 );
 
-
--- -----------------------------------------------------------
 -- 2. KATEGORI (self-reference: ust_kategori_id)
--- ER: kategori_id(PK,int), ust_kategori_id(FK,int),
---     ad(NULL,varchar), aciklama(NULL,text)
--- -----------------------------------------------------------
 CREATE TABLE kategori (
     kategori_id     SERIAL PRIMARY KEY,
     ust_kategori_id INT,
@@ -65,14 +45,7 @@ CREATE TABLE kategori (
         ON DELETE SET NULL
 );
 
-
--- -----------------------------------------------------------
 -- 3. KITAP
--- ER: kitap_id(PK,int), isbn(UQ,varchar), kategori_id(FK,int),
---     yayinevi_id(FK,int), baslik(NN,varchar), yayin_yili(CHECK,int),
---     sayfa_sayisi(CHECK,int), dil(DEFAULT,varchar), baski_no(DEFAULT,int),
---     aciklama(NN,text)
--- -----------------------------------------------------------
 CREATE TABLE kitap (
     kitap_id     SERIAL PRIMARY KEY,
     isbn         VARCHAR(20) NOT NULL UNIQUE,
@@ -94,13 +67,7 @@ CREATE TABLE kitap (
         ON DELETE RESTRICT
 );
 
-
--- -----------------------------------------------------------
 -- 4. KITAP_KOPYA
--- ER: kopya_id(PK,int), kitap_id(FK,int), barkod(UQ,varchar),
---     raf_no(NULL,varchar), durum(DEFAULT,enum), alim_tarihi(NULL,date),
---     fiyat(CHECK,decimal)
--- -----------------------------------------------------------
 CREATE TABLE kitap_kopya (
     kopya_id    SERIAL PRIMARY KEY,
     kitap_id    INT NOT NULL,
@@ -116,11 +83,7 @@ CREATE TABLE kitap_kopya (
         ON DELETE CASCADE
 );
 
-
--- -----------------------------------------------------------
 -- 5. KITAP_KATEGORI (Bridge: Kitap M:N Kategori)
--- ER: kitap_id(PK,FK,int), kategori_id(PK,FK,int)
--- -----------------------------------------------------------
 CREATE TABLE kitap_kategori (
     kitap_id    INT NOT NULL,
     kategori_id INT NOT NULL,
@@ -135,13 +98,7 @@ CREATE TABLE kitap_kategori (
         ON DELETE CASCADE
 );
 
-
--- -----------------------------------------------------------
 -- 6. YAZAR
--- ER: yazar_id(PK,int), ad(NN,varchar), soyad(NN,varchar),
---     dogum_tarihi(NULL,date), olum_tarihi(NULL,date),
---     uyruk(NULL,varchar), biyografi(NULL,text)
--- -----------------------------------------------------------
 CREATE TABLE yazar (
     yazar_id     SERIAL PRIMARY KEY,
     ad           VARCHAR(100) NOT NULL,
@@ -152,11 +109,7 @@ CREATE TABLE yazar (
     biyografi    TEXT
 );
 
-
--- -----------------------------------------------------------
 -- 7. KITAP_YAZAR (Bridge: Kitap M:N Yazar)
--- ER: kitap_id(PK,FK,int), yazar_id(PK,FK,int)
--- -----------------------------------------------------------
 CREATE TABLE kitap_yazar (
     kitap_id INT NOT NULL,
     yazar_id INT NOT NULL,
@@ -171,14 +124,7 @@ CREATE TABLE kitap_yazar (
         ON DELETE CASCADE
 );
 
-
--- -----------------------------------------------------------
 -- 8. OGRENCI
--- ER: ogrenci_id(PK,int), ogrenci_no(UQ,varchar), tc_kimlik(UQ,char),
---     ad(NN,varchar), soyad(NN,varchar), email(UNIQUE,varchar),
---     telefon(NN,varchar), adres(NULL,varchar), dogum_tarihi(NN,date),
---     cinsiyet(enum:'E','K'), kayit_tarihi(DEFAULT,date), aktif_mi(DEFAULT,boolean)
--- -----------------------------------------------------------
 CREATE TABLE ogrenci (
     ogrenci_id   SERIAL PRIMARY KEY,
     ogrenci_no   VARCHAR(15) NOT NULL UNIQUE,
@@ -194,14 +140,7 @@ CREATE TABLE ogrenci (
     aktif_mi     BOOLEAN DEFAULT TRUE
 );
 
-
--- -----------------------------------------------------------
 -- 9. GOREVLI
--- ER: gorevli_id(PK,int), tc_kimlik(UQ,char), kullanici_adi(UQ,varchar),
---     ad(NN,varchar), soyad(NN,varchar), email(UNIQUE,varchar),
---     telefon(NN,varchar), pozisyon(NN,enum), ise_baslama_tarihi(NN,date),
---     maas(CHECK,decimal), sifre_hash(NN,varchar), aktif_mi(DEFAULT,boolean)
--- -----------------------------------------------------------
 CREATE TABLE gorevli (
     gorevli_id         SERIAL PRIMARY KEY,
     tc_kimlik          CHAR(11)    NOT NULL UNIQUE,
@@ -218,12 +157,7 @@ CREATE TABLE gorevli (
     aktif_mi           BOOLEAN DEFAULT TRUE
 );
 
-
--- -----------------------------------------------------------
 -- 10. YETKI
--- ER: yetki_id(PK,int), yetki_ad(UQ,varchar),
---     aciklama(NULL,varchar), modul(NN,varchar)
--- -----------------------------------------------------------
 CREATE TABLE yetki (
     yetki_id SERIAL PRIMARY KEY,
     yetki_ad VARCHAR(50) NOT NULL UNIQUE,
@@ -231,12 +165,7 @@ CREATE TABLE yetki (
     modul    VARCHAR(30) NOT NULL
 );
 
-
--- -----------------------------------------------------------
 -- 11. GOREVLI_YETKI (Bridge: Gorevli M:N Yetki)
--- ER: gorevli_id(PK,FK,int), yetki_id(PK,FK,int),
---     veren_gorevli_id(FK,int), verilme_tarihi(DEFAULT,datetime)
--- -----------------------------------------------------------
 CREATE TABLE gorevli_yetki (
     gorevli_id       INT NOT NULL,
     yetki_id         INT NOT NULL,
@@ -257,13 +186,7 @@ CREATE TABLE gorevli_yetki (
         ON DELETE SET NULL
 );
 
-
--- -----------------------------------------------------------
 -- 12. ODUNC_ALMA
--- ER: odunc_id(PK,int), ogrenci_id(FK,int), kopya_id(FK,int),
---     gorevli_id(FK,int), odunc_tarihi(DEFAULT,datetime),
---     iade_tarihi_beklenen(NN,date), durum(DEFAULT,enum)
--- -----------------------------------------------------------
 CREATE TABLE odunc_alma (
     odunc_id             SERIAL PRIMARY KEY,
     ogrenci_id           INT NOT NULL,
@@ -289,13 +212,7 @@ CREATE TABLE odunc_alma (
         CHECK (iade_tarihi_beklenen > odunc_tarihi::DATE)
 );
 
-
--- -----------------------------------------------------------
 -- 13. IADE (1:1 -> Odunc_Alma)
--- ER: iade_id(PK,int), odunc_id(FK,UQ,int), gorevli_id(FK,int),
---     iade_tarihi(DEFAULT,datetime), kitap_durumu(NN,enum),
---     notlar(NULL,text)
--- -----------------------------------------------------------
 CREATE TABLE iade (
     iade_id      SERIAL PRIMARY KEY,
     odunc_id     INT NOT NULL UNIQUE,
@@ -314,14 +231,7 @@ CREATE TABLE iade (
         ON DELETE RESTRICT
 );
 
-
--- -----------------------------------------------------------
 -- 14. CEZA
--- ER: ceza_id(PK,int), ogrenci_id(FK,int), odunc_id(FK,int),
---     ceza_miktari(NN,decimal), ceza_nedeni(NN,enum),
---     ceza_tarihi(DEFAULT,date), odendi_mi(DEFAULT,boolean),
---     odeme_tarihi(NULL,date)
--- -----------------------------------------------------------
 CREATE TABLE ceza (
     ceza_id      SERIAL PRIMARY KEY,
     ogrenci_id   INT NOT NULL,
@@ -342,13 +252,7 @@ CREATE TABLE ceza (
         ON DELETE CASCADE
 );
 
-
--- -----------------------------------------------------------
 -- 15. REZERVASYON
--- ER: rezervasyon_id(PK,int), ogrenci_id(FK,int), kitap_id(FK,int),
---     rezervasyon_tarihi(DEFAULT,datetime),
---     son_gecerlilik_tarihi(NN,date), durum(DEFAULT,enum)
--- -----------------------------------------------------------
 CREATE TABLE rezervasyon (
     rezervasyon_id        SERIAL PRIMARY KEY,
     ogrenci_id            INT NOT NULL,
@@ -368,14 +272,9 @@ CREATE TABLE rezervasyon (
 );
 
 
--- =============================================================
--- BÖLÜM 2: DML - ÖRNEK VERİ EKLEME (her tablo min. 5 DML)
--- =============================================================
+-- BÖLÜM 2: DML
 
-
--- -----------------------------------------------------------
--- 1. YAYINEVI (5 kayıt)
--- -----------------------------------------------------------
+-- 1. YAYINEVI
 INSERT INTO yayinevi (ad, adres, telefon, email, web_sitesi) VALUES
 ('Can Yayınları',        'Beyoğlu, İstanbul',   '02122525959', 'info@canyayinlari.com',  'www.canyayinlari.com'),
 ('İş Bankası Kültür',    'Beyoğlu, İstanbul',   '02122521151', 'info@iskultur.com.tr',   'www.iskultur.com.tr'),
@@ -383,10 +282,7 @@ INSERT INTO yayinevi (ad, adres, telefon, email, web_sitesi) VALUES
 ('İletişim Yayınları',   'Cağaloğlu, İstanbul', '02125166000', 'info@iletisim.com.tr',   'www.iletisim.com.tr'),
 ('Doğan Kitap',          'Şişli, İstanbul',     '02124781111', 'info@dogankitap.com.tr', 'www.dogankitap.com.tr');
 
-
--- -----------------------------------------------------------
--- 2. KATEGORI (7 kayıt - hiyerarşili)
--- -----------------------------------------------------------
+-- 2. KATEGORI (hiyerarşili)
 INSERT INTO kategori (ust_kategori_id, ad, aciklama) VALUES
 (NULL, 'Edebiyat',     'Edebi eserler'),
 (NULL, 'Bilim',        'Bilimsel yayınlar'),
@@ -396,11 +292,8 @@ INSERT INTO kategori (ust_kategori_id, ad, aciklama) VALUES
 (4,    'Bilim Kurgu',  'Roman > Bilim Kurgu'),
 (3,    'Biyografi',    'Tarih > Biyografi');
 
-
--- -----------------------------------------------------------
--- 3. KITAP (7 kayıt)
+-- 3. KITAP
 -- KITAP.kategori_id = ana kategori; ek kategoriler KITAP_KATEGORI tablosunda
--- -----------------------------------------------------------
 INSERT INTO kitap (isbn, kategori_id, yayinevi_id, baslik, yayin_yili, sayfa_sayisi, dil, baski_no, aciklama) VALUES
 ('9789750726330', 4, 1, 'Suç ve Ceza',           1866, 687,  'Türkçe', 12, 'Dostoyevski klasiği'),
 ('9789944886918', 4, 2, 'Sefiller',              1862, 1463, 'Türkçe', 8,  'Victor Hugo başyapıtı'),
@@ -410,10 +303,7 @@ INSERT INTO kitap (isbn, kategori_id, yayinevi_id, baslik, yayin_yili, sayfa_say
 ('9789944884983', 4, 2, 'Tutunamayanlar',        1972, 724,  'Türkçe', 25, 'Oğuz Atay romanı'),
 ('9789753421645', 4, 5, 'Kürk Mantolu Madonna',  1943, 160,  'Türkçe', 40, 'Sabahattin Ali novellası');
 
-
--- -----------------------------------------------------------
--- 4. KITAP_KOPYA (10 kayıt)
--- -----------------------------------------------------------
+-- 4. KITAP_KOPYA 
 INSERT INTO kitap_kopya (kitap_id, barkod, raf_no, durum, alim_tarihi, fiyat) VALUES
 (1, 'BRK-0001', 'A-01-05', 'musait',  '2023-01-15', 85.00),
 (1, 'BRK-0002', 'A-01-06', 'oduncte', '2023-01-15', 85.00),
@@ -426,10 +316,7 @@ INSERT INTO kitap_kopya (kitap_id, barkod, raf_no, durum, alim_tarihi, fiyat) VA
 (6, 'BRK-0009', 'A-04-01', 'oduncte', '2023-11-01', 110.00),
 (7, 'BRK-0010', 'A-05-15', 'musait',  '2023-09-10', 45.00);
 
-
--- -----------------------------------------------------------
--- 5. KITAP_KATEGORI (Bridge - 9 kayıt)
--- -----------------------------------------------------------
+-- 5. KITAP_KATEGORI (Bridge)
 INSERT INTO kitap_kategori (kitap_id, kategori_id) VALUES
 (1, 4),  -- Suç ve Ceza → Roman
 (1, 5),  -- Suç ve Ceza → Klasik Roman
@@ -441,10 +328,7 @@ INSERT INTO kitap_kategori (kitap_id, kategori_id) VALUES
 (5, 4),  -- Simyacı → Roman
 (6, 4);  -- Tutunamayanlar → Roman
 
-
--- -----------------------------------------------------------
--- 6. YAZAR (7 kayıt)
--- -----------------------------------------------------------
+-- 6. YAZAR 
 INSERT INTO yazar (ad, soyad, dogum_tarihi, olum_tarihi, uyruk, biyografi) VALUES
 ('Fyodor',     'Dostoyevski', '1821-11-11', '1881-02-09', 'Rus',       'Rus edebiyatının klasik isimlerinden'),
 ('Victor',     'Hugo',        '1802-02-26', '1885-05-22', 'Fransız',   'Fransız romantik yazarı'),
@@ -454,10 +338,7 @@ INSERT INTO yazar (ad, soyad, dogum_tarihi, olum_tarihi, uyruk, biyografi) VALUE
 ('Oğuz',       'Atay',        '1934-10-12', '1977-12-13', 'Türk',      'Modern Türk edebiyatının öncülerinden'),
 ('Sabahattin', 'Ali',         '1907-02-25', '1948-04-02', 'Türk',      'Türk edebiyatının önemli isimlerinden');
 
-
--- -----------------------------------------------------------
--- 7. KITAP_YAZAR (Bridge - 7 kayıt)
--- -----------------------------------------------------------
+-- 7. KITAP_YAZAR 
 INSERT INTO kitap_yazar (kitap_id, yazar_id) VALUES
 (1, 1),  -- Suç ve Ceza → Dostoyevski
 (2, 2),  -- Sefiller → Victor Hugo
@@ -468,9 +349,7 @@ INSERT INTO kitap_yazar (kitap_id, yazar_id) VALUES
 (7, 7);  -- Kürk Mantolu Madonna → Sabahattin Ali
 
 
--- -----------------------------------------------------------
--- 8. OGRENCI (7 kayıt)
--- -----------------------------------------------------------
+-- 8. OGRENCI 
 INSERT INTO ogrenci (ogrenci_no, tc_kimlik, ad, soyad, email, telefon, adres, dogum_tarihi, cinsiyet, aktif_mi) VALUES
 ('20230001', '12345678901', 'Ahmet',   'Yılmaz',  'ahmet.yilmaz@ogr.edu.tr',   '05321112233', 'Kadıköy, İstanbul',  '2003-05-12', 'E', TRUE),
 ('20230002', '12345678902', 'Elif',    'Demir',   'elif.demir@ogr.edu.tr',     '05322223344', 'Şişli, İstanbul',    '2003-08-20', 'K', TRUE),
@@ -480,10 +359,7 @@ INSERT INTO ogrenci (ogrenci_no, tc_kimlik, ad, soyad, email, telefon, adres, do
 ('20210006', '12345678906', 'Ayşe',    'Çelik',   'ayse.celik@ogr.edu.tr',     '05326667788', 'Bakırköy, İstanbul', '2001-01-30', 'K', TRUE),
 ('20190007', '12345678907', 'Can',     'Öztürk',  'can.ozturk@ogr.edu.tr',     '05327778899', 'Maltepe, İstanbul',  '1999-09-14', 'E', FALSE);
 
-
--- -----------------------------------------------------------
--- 9. GOREVLI (5 kayıt)
--- -----------------------------------------------------------
+-- 9. GOREVLI 
 INSERT INTO gorevli (tc_kimlik, kullanici_adi, ad, soyad, email, telefon, pozisyon, ise_baslama_tarihi, maas, sifre_hash) VALUES
 ('98765432101', 'ali.k',   'Ali',   'Kütüphaneci', 'ali.kutuphaneci@lib.edu.tr', '05411112233', 'yonetici', '2015-09-01', 45000.00, '$2a$10$abcdef1234567890hashexample1'),
 ('98765432102', 'fatma.e', 'Fatma', 'Erdem',       'fatma.erdem@lib.edu.tr',     '05412223344', 'memur',    '2018-03-15', 28000.00, '$2a$10$abcdef1234567890hashexample2'),
@@ -491,10 +367,7 @@ INSERT INTO gorevli (tc_kimlik, kullanici_adi, ad, soyad, email, telefon, pozisy
 ('98765432104', 'selin.a', 'Selin', 'Aksoy',       'selin.aksoy@lib.edu.tr',     '05414445566', 'stajyer',  '2025-02-01', 15000.00, '$2a$10$abcdef1234567890hashexample4'),
 ('98765432105', 'burak.g', 'Burak', 'Güneş',       'burak.gunes@lib.edu.tr',     '05415556677', 'stajyer',  '2025-09-01', 15000.00, '$2a$10$abcdef1234567890hashexample5');
 
-
--- -----------------------------------------------------------
--- 10. YETKI (8 kayıt)
--- -----------------------------------------------------------
+-- 10. YETKI
 INSERT INTO yetki (yetki_ad, aciklama, modul) VALUES
 ('kitap_ekle',      'Kitap ekleme yetkisi',     'kitap'),
 ('kitap_sil',       'Kitap silme yetkisi',      'kitap'),
@@ -505,10 +378,7 @@ INSERT INTO yetki (yetki_ad, aciklama, modul) VALUES
 ('rapor_al',        'Rapor görüntüleme',        'rapor'),
 ('kullanici_yonet', 'Kullanıcı yönetimi',       'sistem');
 
-
--- -----------------------------------------------------------
--- 11. GOREVLI_YETKI (Bridge - 16 kayıt)
--- -----------------------------------------------------------
+-- 11. GOREVLI_YETKI (Bridge)
 -- Yönetici (id=1) tüm yetkilere sahip
 INSERT INTO gorevli_yetki (gorevli_id, yetki_id, veren_gorevli_id) VALUES
 (1, 1, NULL),
@@ -530,10 +400,7 @@ INSERT INTO gorevli_yetki (gorevli_id, yetki_id, veren_gorevli_id) VALUES
 (4, 4, 1),
 (5, 3, 1);
 
-
--- -----------------------------------------------------------
--- 12. ODUNC_ALMA (6 kayıt)
--- -----------------------------------------------------------
+-- 12. ODUNC_ALMA
 INSERT INTO odunc_alma (ogrenci_id, kopya_id, gorevli_id, odunc_tarihi, iade_tarihi_beklenen, durum) VALUES
 (1, 2,  2, '2026-03-20 10:30:00', '2026-04-03', 'iade_edildi'),
 (3, 5,  3, '2026-04-01 14:15:00', '2026-04-15', 'iade_edildi'),
@@ -542,15 +409,12 @@ INSERT INTO odunc_alma (ogrenci_id, kopya_id, gorevli_id, odunc_tarihi, iade_tar
 (5, 8,  5, '2026-04-15 13:20:00', '2026-04-29', 'aktif'),
 (6, 10, 3, '2026-03-01 15:00:00', '2026-03-15', 'gecikmis');
 
--- iade min. 5 kayıt olması için 2 ek ödünç daha
+-- iade
 INSERT INTO odunc_alma (ogrenci_id, kopya_id, gorevli_id, odunc_tarihi, iade_tarihi_beklenen, durum) VALUES
 (1, 8, 2, '2026-02-15 10:00:00', '2026-03-01', 'iade_edildi'),
 (3, 1, 3, '2026-02-20 14:00:00', '2026-03-06', 'iade_edildi');
 
-
--- -----------------------------------------------------------
--- 13. IADE (5 kayıt)
--- -----------------------------------------------------------
+-- 13. IADE
 INSERT INTO iade (odunc_id, gorevli_id, iade_tarihi, kitap_durumu, notlar) VALUES
 (1, 2, '2026-04-02 16:45:00', 'iyi',     'Zamanında iade edildi'),
 (2, 3, '2026-04-20 10:00:00', 'hasarli', 'Kapak hafif yıpranmış'),
@@ -558,10 +422,7 @@ INSERT INTO iade (odunc_id, gorevli_id, iade_tarihi, kitap_durumu, notlar) VALUE
 (7, 2, '2026-02-28 11:00:00', 'iyi',     'Temiz iade'),
 (8, 3, '2026-03-05 15:30:00', 'hasarli', 'Sayfa kıvrılmış');
 
-
--- -----------------------------------------------------------
--- 14. CEZA (5 kayıt)
--- -----------------------------------------------------------
+-- 14. CEZA
 INSERT INTO ceza (ogrenci_id, odunc_id, ceza_miktari, ceza_nedeni, ceza_tarihi, odendi_mi, odeme_tarihi) VALUES
 (3, 2, 25.00,  'hasar',   '2026-04-20', TRUE,  '2026-04-20'),
 (2, 3, 10.00,  'gecikme', '2026-04-20', FALSE, NULL),
@@ -569,91 +430,10 @@ INSERT INTO ceza (ogrenci_id, odunc_id, ceza_miktari, ceza_nedeni, ceza_tarihi, 
 (6, 6, 30.00,  'hasar',   '2026-04-18', FALSE, NULL),
 (3, 8, 15.00,  'hasar',   '2026-03-05', FALSE, NULL);
 
-
--- -----------------------------------------------------------
--- 15. REZERVASYON (5 kayıt)
--- -----------------------------------------------------------
+-- 15. REZERVASYON
 INSERT INTO rezervasyon (ogrenci_id, kitap_id, rezervasyon_tarihi, son_gecerlilik_tarihi, durum) VALUES
 (4, 3, '2026-04-10 10:00:00', '2026-04-17', 'tamamlandi'),
 (5, 1, '2026-04-18 14:30:00', '2026-04-25', 'bekliyor'),
 (2, 6, '2026-04-15 09:15:00', '2026-04-22', 'bekliyor'),
 (6, 4, '2026-04-05 11:00:00', '2026-04-12', 'iptal'),
 (1, 7, '2026-04-20 16:45:00', '2026-04-27', 'bekliyor');
-
-
--- =============================================================
--- BÖLÜM 3: KONTROL SORGULARI (TEST)
--- =============================================================
--- SELECT 'yayinevi'       AS tablo, COUNT(*) AS kayit FROM yayinevi
--- UNION ALL SELECT 'kategori',       COUNT(*) FROM kategori
--- UNION ALL SELECT 'kitap',          COUNT(*) FROM kitap
--- UNION ALL SELECT 'kitap_kopya',    COUNT(*) FROM kitap_kopya
--- UNION ALL SELECT 'kitap_kategori', COUNT(*) FROM kitap_kategori
--- UNION ALL SELECT 'yazar',          COUNT(*) FROM yazar
--- UNION ALL SELECT 'kitap_yazar',    COUNT(*) FROM kitap_yazar
--- UNION ALL SELECT 'ogrenci',        COUNT(*) FROM ogrenci
--- UNION ALL SELECT 'gorevli',        COUNT(*) FROM gorevli
--- UNION ALL SELECT 'yetki',          COUNT(*) FROM yetki
--- UNION ALL SELECT 'gorevli_yetki',  COUNT(*) FROM gorevli_yetki
--- UNION ALL SELECT 'odunc_alma',     COUNT(*) FROM odunc_alma
--- UNION ALL SELECT 'iade',           COUNT(*) FROM iade
--- UNION ALL SELECT 'ceza',           COUNT(*) FROM ceza
--- UNION ALL SELECT 'rezervasyon',    COUNT(*) FROM rezervasyon;
-
-
--- =============================================================
--- BÖLÜM 4: ÖRNEK JOIN SORGULARI (BONUS)
--- =============================================================
-
--- 1) Aktif ödünç alınan kitaplar ve öğrenci bilgileri
--- SELECT
---     o.ad || ' ' || o.soyad AS ogrenci,
---     k.baslik AS kitap,
---     oa.odunc_tarihi,
---     oa.iade_tarihi_beklenen,
---     oa.durum
--- FROM odunc_alma oa
--- JOIN ogrenci o       ON o.ogrenci_id = oa.ogrenci_id
--- JOIN kitap_kopya kk  ON kk.kopya_id  = oa.kopya_id
--- JOIN kitap k         ON k.kitap_id   = kk.kitap_id
--- WHERE oa.durum IN ('aktif', 'gecikmis')
--- ORDER BY oa.odunc_tarihi DESC;
-
--- 2) Toplam ödenmemiş ceza - öğrenci bazlı
--- SELECT
---     o.ad || ' ' || o.soyad AS ogrenci,
---     SUM(c.ceza_miktari) AS toplam_ceza
--- FROM ceza c
--- JOIN ogrenci o ON o.ogrenci_id = c.ogrenci_id
--- WHERE c.odendi_mi = FALSE
--- GROUP BY o.ogrenci_id, o.ad, o.soyad
--- ORDER BY toplam_ceza DESC;
-
--- 3) En çok ödünç alınan kitaplar
--- SELECT
---     k.baslik,
---     COUNT(*) AS odunc_sayisi
--- FROM odunc_alma oa
--- JOIN kitap_kopya kk ON kk.kopya_id = oa.kopya_id
--- JOIN kitap k        ON k.kitap_id  = kk.kitap_id
--- GROUP BY k.kitap_id, k.baslik
--- ORDER BY odunc_sayisi DESC
--- LIMIT 5;
-
--- 4) Bir kitabın tüm kategorileri (ana + ek)
--- SELECT k.baslik, kat.ad AS kategori
--- FROM kitap k
--- JOIN kitap_kategori kk ON kk.kitap_id = k.kitap_id
--- JOIN kategori kat ON kat.kategori_id = kk.kategori_id
--- ORDER BY k.baslik;
-
--- 5) Her görevlinin sahip olduğu yetkiler
--- SELECT g.ad || ' ' || g.soyad AS gorevli, g.pozisyon, y.yetki_ad
--- FROM gorevli g
--- JOIN gorevli_yetki gy ON gy.gorevli_id = g.gorevli_id
--- JOIN yetki y          ON y.yetki_id    = gy.yetki_id
--- ORDER BY g.gorevli_id, y.yetki_ad;
-
--- =============================================================
--- SON
--- =============================================================
