@@ -8,6 +8,17 @@
             "mainClass": "com.turkcell.spring_starter.SpringStarterApplication",
             "projectName": "spring-starter",
             "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=59278 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=spring-starter"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-SpringStarterApplication<com.turkcell-spring-starter>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.turkcell.spring_starter.SpringStarterApplication",
+            "projectName": "com.turkcell-spring-starter",
+            "args": "",
             "envFile": "${workspaceFolder}/.env"
         }
     ]
