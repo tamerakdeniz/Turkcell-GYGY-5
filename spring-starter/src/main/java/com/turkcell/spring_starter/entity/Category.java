@@ -1,20 +1,19 @@
 package com.turkcell.spring_starter.entity;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.hibernate.annotations.ManyToAny;
 import org.hibernate.annotations.UuidGenerator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "products")
-public class Product {
+@Table
+public class Category {
     @Id
     @UuidGenerator
     @Column(name = "id")
@@ -23,13 +22,8 @@ public class Product {
     @Column(name = "name", nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column(name = "description", length = 500)
-    private String description;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-
+    @OneToMany(mappedBy = "category")
+    private List<Product> products;
 
 
 
@@ -49,22 +43,12 @@ public class Product {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public List<Product> getProducts() {
+        return products;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setProducts(List<Product> products) {
+        this.products = products;
     }
 
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
-    }
-
-
-    
 }
