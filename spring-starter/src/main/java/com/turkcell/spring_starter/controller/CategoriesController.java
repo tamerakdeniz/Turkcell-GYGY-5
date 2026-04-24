@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.turkcell.spring_starter.dto.CreateCategoryRequest;
 import com.turkcell.spring_starter.dto.CreatedCategoryResponse;
 import com.turkcell.spring_starter.dto.ListCategoryResponse;
-import com.turkcell.spring_starter.entity.Category;
 import com.turkcell.spring_starter.service.CategoryServiceImpl;
 
 import java.util.List;
