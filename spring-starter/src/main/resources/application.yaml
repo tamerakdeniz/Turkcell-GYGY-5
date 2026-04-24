@@ -2,7 +2,7 @@ spring:
   application:
     name: spring-starter
   datasource:
-    url: jdbc:postgresql://localhost:5432/northwind
+    url: jdbc:postgresql://localhost:5432/eticaret
     username: admin
     password: admin
     driver-class-name: org.postgresql.Driver
