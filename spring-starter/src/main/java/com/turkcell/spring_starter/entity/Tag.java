@@ -1,6 +1,5 @@
 package com.turkcell.spring_starter.entity;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 

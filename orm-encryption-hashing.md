@@ -1,4 +1,16 @@
-# ORM, DB Bağlantısı, Encryption & Hashing
+package com.turkcell.spring_starter.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.stereotype.Service;
+
+import com.turkcell.spring_starter.dto.CreateCategoryRequest;
+import com.turkcell.spring_starter.dto.CreatedCategoryResponse;
+import com.turkcell.spring_starter.dto.ListCategoryResponse;
+import com.turkcell.spring_starter.entity.Category;
+import com.turkcell.spring_starter.repository.CategoryRepository;# ORM, DB Bağlantısı, Encryption & Hashing
 
 > Bir geliştiricinin günlük hayatta kullanacağı **must-know** konular. Aşağıdaki notlar; kavramları, aralarındaki farkları ve Java üzerindeki pratik kullanımlarını kapsar.
 
