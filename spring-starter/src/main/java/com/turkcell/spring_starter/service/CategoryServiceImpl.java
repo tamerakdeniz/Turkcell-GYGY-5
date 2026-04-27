@@ -1,6 +1,7 @@
 package com.turkcell.spring_starter.service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,6 @@ public class CategoryServiceImpl {
     public List<ListCategoryResponse> getAll() {
         List<Category> categories = categoryRepository.findAll();
 
-        // TODO: Refactor
             List<ListCategoryResponse> response = categories.stream().map(category -> {
             ListCategoryResponse listCategoryResponse = new ListCategoryResponse();
             listCategoryResponse.setId(category.getId());
@@ -51,6 +51,21 @@ public class CategoryServiceImpl {
         }).collect(Collectors.toList());
 
         return response;
+    }
+
+
+    public List<ListCategoryResponse> search(String query) {        
+
+        Set<Category> categories = categoryRepository.findByName(query);
+
+        List<ListCategoryResponse> responseList = categories.stream().map(category -> {
+            ListCategoryResponse listCategoryResponse = new ListCategoryResponse();
+            listCategoryResponse.setId(category.getId());
+            listCategoryResponse.setName(category.getName());
+            return listCategoryResponse;
+        }).collect(Collectors.toList());
+
+        return responseList;
     }
 
     public GetCategoryResponse getById(UUID id) {
