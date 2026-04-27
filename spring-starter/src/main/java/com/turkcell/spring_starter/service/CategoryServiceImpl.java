@@ -16,13 +16,17 @@ import com.turkcell.spring_starter.dto.UpdatedCategoryResponse;
 import com.turkcell.spring_starter.entity.Category;
 import com.turkcell.spring_starter.repository.CategoryRepository;
 
+import jakarta.persistence.EntityManager;
+
 @Service
 public class CategoryServiceImpl {
     private final CategoryRepository categoryRepository;
+    private final EntityManager entityManager;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
+        public CategoryServiceImpl(CategoryRepository categoryRepository, EntityManager entityManager) {
+            this.categoryRepository = categoryRepository;
+            this.entityManager = entityManager;
+        }
 
     public CreatedCategoryResponse create(CreateCategoryRequest createCategoryRequest) {
         // Veritabanında insert-update işlemi çalıştırır. Eğer id alanı null ise insert, değilse update işlemi yapar.
@@ -56,7 +60,17 @@ public class CategoryServiceImpl {
 
     public List<ListCategoryResponse> search(String query) {        
 
-        Set<Category> categories = categoryRepository.findByName(query);
+        // Set<Category> categories = categoryRepository.findByNameLike("%" + query + "%");
+
+        // String Concatination -> KESİNLİKLE YASAK
+        // String jpql = "Select c from Category c Where c.name LIKE '%" + query + "%'";
+
+        String jpql = "Select c from Category c Where c.name like :query";
+
+        List<Category> categories = entityManager
+        .createQuery(jpql, Category.class)
+        .setParameter("query", "%" + query + "%")
+        .getResultList();
 
         List<ListCategoryResponse> responseList = categories.stream().map(category -> {
             ListCategoryResponse listCategoryResponse = new ListCategoryResponse();

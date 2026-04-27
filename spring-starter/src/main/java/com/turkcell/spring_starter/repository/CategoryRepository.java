@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
-    @Query("SELECT c FROM Category c WHERE c.name = :query")
+    @Query("SELECT c FROM Category c WHERE c.name LIKE %:query%")
     Set<Category> findByName(String query);
     
 }
