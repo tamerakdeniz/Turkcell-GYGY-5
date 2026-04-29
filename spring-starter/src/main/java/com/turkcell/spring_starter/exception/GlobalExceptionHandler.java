@@ -14,6 +14,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.turkcell.spring_starter.dto.ErrorResponse;
 import com.turkcell.spring_starter.dto.ValidationErrorResponse;
 
+// Ödev: Bilindik hata türleri için yönetimi düzgünleştir.
+// RuntimeException çok genel olduğu için, kendimize özel Exception türleri yaratıp onları yakalayarak daha spesifik mesajlar dönebiliriz. 
+// (BusinessException gibi bir üst sınıf yaratıp, onun altına UserAlreadyExistsException, InvalidCredentialsException gibi özel exception'lar yaratabiliriz.) 
+// ErrorResponse -> {title, type, message}
+// ValidationErrorResponse -> {argument, [message]}
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
