@@ -10,6 +10,7 @@ import com.turkcell.library.dto.kitapkopya.KitapKopyaResponse;
 import com.turkcell.library.dto.kitapkopya.UpdateKitapKopyaRequest;
 import com.turkcell.library.entity.Kitap;
 import com.turkcell.library.entity.KitapKopya;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.KitapKopyaRepository;
 import com.turkcell.library.repository.KitapRepository;
 
@@ -26,7 +27,7 @@ public class KitapKopyaServiceImpl {
 
     public KitapKopyaResponse create(CreateKitapKopyaRequest request) {
         Kitap kitap = kitapRepository.findById(request.getKitapId())
-                .orElseThrow(() -> new RuntimeException("Kitap bulunamadı: " + request.getKitapId()));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap", request.getKitapId()));
 
         KitapKopya kopya = new KitapKopya();
         kopya.setKitap(kitap);
@@ -46,15 +47,15 @@ public class KitapKopyaServiceImpl {
 
     public KitapKopyaResponse getById(Long id) {
         KitapKopya kopya = kitapKopyaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kitap kopyası bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap kopyası", id));
         return toResponse(kopya);
     }
 
     public KitapKopyaResponse update(Long id, UpdateKitapKopyaRequest request) {
         KitapKopya kopya = kitapKopyaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kitap kopyası bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap kopyası", id));
         Kitap kitap = kitapRepository.findById(request.getKitapId())
-                .orElseThrow(() -> new RuntimeException("Kitap bulunamadı: " + request.getKitapId()));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap", request.getKitapId()));
 
         kopya.setKitap(kitap);
         kopya.setBarkod(request.getBarkod());
@@ -67,7 +68,7 @@ public class KitapKopyaServiceImpl {
 
     public void delete(Long id) {
         KitapKopya kopya = kitapKopyaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kitap kopyası bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap kopyası", id));
         kitapKopyaRepository.delete(kopya);
     }
 

@@ -10,6 +10,7 @@ import com.turkcell.library.dto.ogrenci.CreateOgrenciRequest;
 import com.turkcell.library.dto.ogrenci.OgrenciResponse;
 import com.turkcell.library.dto.ogrenci.UpdateOgrenciRequest;
 import com.turkcell.library.entity.Ogrenci;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.OgrenciRepository;
 
 @Service
@@ -45,13 +46,13 @@ public class OgrenciServiceImpl {
 
     public OgrenciResponse getById(Long id) {
         Ogrenci ogrenci = ogrenciRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Öğrenci", id));
         return toResponse(ogrenci);
     }
 
     public OgrenciResponse update(Long id, UpdateOgrenciRequest request) {
         Ogrenci ogrenci = ogrenciRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Öğrenci", id));
         ogrenci.setOgrenciNo(request.getOgrenciNo());
         ogrenci.setTcKimlik(request.getTcKimlik());
         ogrenci.setAd(request.getAd());
@@ -67,7 +68,7 @@ public class OgrenciServiceImpl {
 
     public void delete(Long id) {
         Ogrenci ogrenci = ogrenciRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Öğrenci", id));
         ogrenciRepository.delete(ogrenci);
     }
 

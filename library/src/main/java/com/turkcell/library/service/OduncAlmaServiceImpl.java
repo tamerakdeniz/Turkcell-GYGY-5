@@ -13,6 +13,7 @@ import com.turkcell.library.entity.Gorevli;
 import com.turkcell.library.entity.KitapKopya;
 import com.turkcell.library.entity.OduncAlma;
 import com.turkcell.library.entity.Ogrenci;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.GorevliRepository;
 import com.turkcell.library.repository.KitapKopyaRepository;
 import com.turkcell.library.repository.OduncAlmaRepository;
@@ -38,11 +39,11 @@ public class OduncAlmaServiceImpl {
 
     public OduncAlmaResponse create(CreateOduncAlmaRequest request) {
         Ogrenci ogrenci = ogrenciRepository.findById(request.getOgrenciId())
-                .orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı: " + request.getOgrenciId()));
+                .orElseThrow(() -> new EntityNotFoundException("Öğrenci", request.getOgrenciId()));
         KitapKopya kopya = kitapKopyaRepository.findById(request.getKopyaId())
-                .orElseThrow(() -> new RuntimeException("Kitap kopyası bulunamadı: " + request.getKopyaId()));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap kopyası", request.getKopyaId()));
         Gorevli gorevli = gorevliRepository.findById(request.getGorevliId())
-                .orElseThrow(() -> new RuntimeException("Görevli bulunamadı: " + request.getGorevliId()));
+                .orElseThrow(() -> new EntityNotFoundException("Görevli", request.getGorevliId()));
 
         OduncAlma oduncAlma = new OduncAlma();
         oduncAlma.setOgrenci(ogrenci);
@@ -66,19 +67,19 @@ public class OduncAlmaServiceImpl {
 
     public OduncAlmaResponse getById(Long id) {
         OduncAlma oduncAlma = oduncAlmaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ödünç kaydı bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Ödünç kaydı", id));
         return toResponse(oduncAlma);
     }
 
     public OduncAlmaResponse update(Long id, UpdateOduncAlmaRequest request) {
         OduncAlma oduncAlma = oduncAlmaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ödünç kaydı bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Ödünç kaydı", id));
         Ogrenci ogrenci = ogrenciRepository.findById(request.getOgrenciId())
-                .orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı: " + request.getOgrenciId()));
+                .orElseThrow(() -> new EntityNotFoundException("Öğrenci", request.getOgrenciId()));
         KitapKopya kopya = kitapKopyaRepository.findById(request.getKopyaId())
-                .orElseThrow(() -> new RuntimeException("Kitap kopyası bulunamadı: " + request.getKopyaId()));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap kopyası", request.getKopyaId()));
         Gorevli gorevli = gorevliRepository.findById(request.getGorevliId())
-                .orElseThrow(() -> new RuntimeException("Görevli bulunamadı: " + request.getGorevliId()));
+                .orElseThrow(() -> new EntityNotFoundException("Görevli", request.getGorevliId()));
 
         oduncAlma.setOgrenci(ogrenci);
         oduncAlma.setKopya(kopya);
@@ -91,7 +92,7 @@ public class OduncAlmaServiceImpl {
 
     public void delete(Long id) {
         OduncAlma oduncAlma = oduncAlmaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ödünç kaydı bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Ödünç kaydı", id));
         oduncAlmaRepository.delete(oduncAlma);
     }
 

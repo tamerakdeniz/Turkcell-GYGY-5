@@ -850,6 +850,209 @@ curl http://localhost:8080/api/products
 
 ---
 
-## 18. Tek Cümle Özet
+## 18. Exception Handling & Kimlik Doğrulama Akışı (2026-04-29 Güncelleme)
+
+Bu bölüm, `Eksiklikler` tablosunda (15.) yer alan **"Generic RuntimeException"**, **"HTTP status code hep 200/500"** ve **"Validation eklenmemiş"** maddelerinin **Users akışı** için nasıl çözüldüğünü ve oluşturulan yeni yapıyı özetler.
+
+### 18.1 Neden bu geliştirme?
+
+Önceki durum (sorunlar):
+
+| Sorun | Sonuç |
+|---|---|
+| `throw new RuntimeException("...")` | Tüm iş kuralı hataları aynı tipten — handler ayrım yapamıyor |
+| Tüm hatalar `400 Bad Request` ile dönüyordu | Yanlış semantik: zaten kayıtlı e-posta `409`, yanlış parola `401` olmalı |
+| Validasyon hatasında ham `MethodArgumentNotValidException.getMessage()` dönüyordu | Frontend için **structured** değil, parse edilemez tek string |
+| `register` endpoint'i `void` → 200 OK + **boş body** | İstemci başarı geri bildirimi alamıyor; cevap belirsiz |
+| Aynı pakette `org.springframework.http.HttpStatus`'u **gölgeleyen** boş bir `HttpStatus.java` (BAD_REQUEST = null) duruyordu | Tehlikeli, `@ResponseStatus` annotation'larında null'a yol açabilirdi |
+
+### 18.2 Yeni / değişen dosyalar
+
+```
+exception/
+├── BusinessException.java            (YENİ — abstract üst sınıf)
+├── UserAlreadyExistsException.java   (YENİ)
+├── InvalidCredentialsException.java  (YENİ)
+├── GlobalExceptionHandler.java       (DEĞİŞTİ — yorum satırındaki ödev tamamlandı)
+└── HttpStatus.java                   (SİLİNDİ — ölü/gölgeleyici dosya)
+
+dto/
+├── ErrorResponse.java                (YENİ — {title, type, message})
+└── ValidationErrorResponse.java      (YENİ — {argument, message: List<String>})
+
+service/UserServiceImpl.java          (DEĞİŞTİ — RuntimeException → custom; register String döner)
+controller/UsersController.java       (DEĞİŞTİ — register String döner, @ResponseStatus eklendi)
+```
+
+### 18.3 Sınıf hiyerarşisi
+
+```
+java.lang.RuntimeException
+    └── BusinessException                      (abstract — title, type, status, message)
+            ├── UserAlreadyExistsException     → 409 Conflict
+            └── InvalidCredentialsException    → 401 Unauthorized
+```
+
+`BusinessException` `abstract` çünkü doğrudan fırlatılması anlamsız — her zaman somut bir alt-tipi kullanılmalı. Bu, "kullanıcı `BusinessException` fırlatıp generic bir hata oluşturmasın" güvencesi sağlar.
+
+`BusinessException` 4 alan taşır:
+- `title` — kullanıcı dostu başlık ("Kullanıcı zaten mevcut")
+- `type` — makine okunabilir kod ("USER_ALREADY_EXISTS")
+- `message` (parent class'tan) — ayrıntılı açıklama
+- `status` (`org.springframework.http.HttpStatus`) — **her exception kendi HTTP status'unu bilir**
+
+> **Neden status alanı?** Alternatif: handler'da `if (ex instanceof UserAlreadyExistsException) { 409 }` zinciri yazmak. Polymorphism ile bu mantık exception'ın **kendisine** taşındı; handler tek satırda `ResponseEntity.status(ex.getStatus())` yapar. Yeni bir exception eklemek için handler'a dokunmaya **gerek yok**.
+
+### 18.4 Akış diyagramları
+
+#### A) Mutlu yol — Başarılı register
+
+```
+Client
+  │ POST /api/users  body: {email, password}
+  ▼
+UsersController.register(@Valid RegisterRequest)
+  │ @Valid çalışır → @NotBlank, @Email, @Length kontrolleri geçer
+  ▼
+UserServiceImpl.registerUser(req)
+  │ findByEmail → boş
+  │ passwordEncoder.encode(...)
+  │ userRepository.save(user)
+  │ return "Kayıt başarılı"
+  ▼
+Controller
+  │ @ResponseStatus(CREATED)
+  ▼
+HTTP 201 Created
+Body: "Kayıt başarılı"
+```
+
+#### B) Validasyon hatası — boş veya kısa parola
+
+```
+Client
+  │ POST /api/users  body: {email:"a@b.c", password:""}
+  ▼
+@Valid → @NotBlank fail
+  │ Spring otomatik throw: MethodArgumentNotValidException
+  ▼
+GlobalExceptionHandler.handleMethodArgumentNotValidException
+  │ FieldError listesini Map<field, List<msg>> ile grupla
+  │ List<ValidationErrorResponse> oluştur
+  ▼
+HTTP 400 Bad Request
+Body: [
+  {"argument":"password", "message":["Parola boş olamaz.","..."]}
+]
+```
+
+#### C) İş kuralı ihlali — e-posta zaten kayıtlı
+
+```
+UserServiceImpl.registerUser
+  │ findByEmail → bulundu
+  │ throw new UserAlreadyExistsException("Bu e-posta zaten kayıtlı")
+  ▼  (Spring AOP exception bubble-up)
+GlobalExceptionHandler.handleBusinessException
+  │ status = ex.getStatus() = HttpStatus.CONFLICT
+  ▼
+HTTP 409 Conflict
+Body: {
+  "title":"Kullanıcı zaten mevcut",
+  "type":"USER_ALREADY_EXISTS",
+  "message":"Bu e-posta zaten kayıtlı"
+}
+```
+
+#### D) Login hatası — yanlış parola veya bilinmeyen e-posta
+
+```
+UserServiceImpl.login
+  │ ya findByEmail boş, ya passwordEncoder.matches false
+  │ throw new InvalidCredentialsException("Giriş bilgileri yanlış")
+  ▼
+GlobalExceptionHandler.handleBusinessException
+  ▼
+HTTP 401 Unauthorized
+Body: {
+  "title":"Geçersiz kimlik bilgileri",
+  "type":"INVALID_CREDENTIALS",
+  "message":"Giriş bilgileri yanlış"
+}
+```
+
+> **Güvenlik notu:** `login()` "kullanıcı bulunamadı" ve "parola yanlış" durumları için **aynı** mesajı döner. Saldırgan e-posta enumeration yapamaz — kayıtlı e-postayı tahmin edemez.
+
+### 18.5 Status code seçimleri — neden?
+
+| Senaryo | Status | Gerekçe |
+|---|---|---|
+| `POST /api/users` başarılı | **201 Created** | REST standardı: yeni kaynak oluşturuldu |
+| `POST /api/users/login` başarılı | **200 OK** | Yeni kaynak yok; sadece bir doğrulama operasyonu |
+| Validasyon hatası (`@Valid` fail) | **400 Bad Request** | İstemci tarafının hatalı veri göndermesi |
+| `UserAlreadyExistsException` | **409 Conflict** | Kaynak çakışması — istek formatı doğru ama mevcut state ile çelişiyor |
+| `InvalidCredentialsException` | **401 Unauthorized** | Kimlik doğrulanamadı (403 değil — 403 "kimliği biliyorum ama yetkin yok" demek) |
+| Yakalanmamış generic `RuntimeException` | **500 Internal Server Error** | Beklenmeyen durum — sunucu hatası |
+
+> **400 vs 409 ayrımı:** "İsteğin kendisi hatalı mı, yoksa istek doğru ama state izin vermiyor mu?" diye sor. E-posta formatı bozuksa **400**; e-posta formatı doğru ama zaten kayıtlıysa **409**.
+
+> **401 vs 403 ayrımı:** Hiç kimliklendirilememişse 401 (kim olduğun belli değil). Kimliğin biliniyor ama bu işlemi yapma yetkin yok ise 403.
+
+### 18.6 ErrorResponse vs ValidationErrorResponse — neden iki ayrı yapı?
+
+| Özellik | `ErrorResponse` | `ValidationErrorResponse` |
+|---|---|---|
+| Kullanım | İş kuralı / generic hata | Alan bazlı form validasyonu |
+| Yapı | **Tek nesne** | **Liste** (her alan için bir öğe) |
+| Alanlar | `title`, `type`, `message` (string) | `argument`, `message` (`List<String>`) |
+| Status | 4xx (genelde 4xx, 500 fallback) | 400 (yapısal validasyon) |
+
+**Neden ayrı?** Bir login isteğinde **tek hata** vardır ("yanlış bilgi"). Ama bir register isteğinde **birden fazla alan** aynı anda hatalı olabilir (email format yanlış + parola çok kısa). Frontend bunu form üzerine field-by-field göstermek ister: hangi `argument` (alan adı) için hangi `message` (mesaj listesi). İki ayrı yapı, frontend'in `if (Array.isArray(error)) { ...field errors... } else { ...generic error... }` ayrımını net yapmasını sağlar.
+
+### 18.7 GlobalExceptionHandler içindeki üç handler — kapsam matrisi
+
+```
+@ExceptionHandler(BusinessException.class)
+    → Tüm BusinessException alt-tiplerini yakalar (polymorphism)
+    → Spring "en spesifik tipte" eşleşeni seçer
+
+@ExceptionHandler(MethodArgumentNotValidException.class)
+    → @Valid fail eden controller method argümanları
+    → Sadece bu tipte yakalar (BusinessException'ı kapsamaz)
+
+@ExceptionHandler(RuntimeException.class)  ← FALLBACK
+    → Yukarıdaki ikisinden hiçbiri eşleşmezse buraya düşer
+    → Spring "en spesifikten en generik'e" doğru eşleştirme yapar
+    → BusinessException de bir RuntimeException olmasına rağmen
+      üstteki daha spesifik handler önce eşleşir
+```
+
+### 18.8 Spring'in arka plan sihri
+
+1. **`@RestControllerAdvice`** → Spring bu sınıfı uygulama başlangıcında bean olarak bulur ve tüm `@RestController`'lar için "global etrafında" çalışan exception handler'ları kayıt eder.
+2. **Exception bubble-up** → Service'te `throw` edilen exception, controller'dan geri sıçrayıp Spring DispatcherServlet'in catch bloğuna düşer. Spring `@ExceptionHandler`'lar arasından tipe en uygun olanı çağırır.
+3. **`@Valid` zinciri** → Controller method'una `@Valid` annotation'ı yazıldığında Spring otomatik olarak Hibernate Validator'ı tetikler. Hata varsa method gövdesi **hiç çalışmaz**, doğrudan `MethodArgumentNotValidException` fırlatılır.
+4. **`ResponseEntity` vs `@ResponseStatus`** → Static (her zaman aynı) status için `@ResponseStatus`. Dinamik (exception'a göre değişen) status için `ResponseEntity.status(...)`. Handler'da exception'dan status okunduğu için `ResponseEntity` tercih edildi.
+
+### 18.9 Eksiklikler tablosundaki etki
+
+| Eksiklik (15. bölüm) | Durum |
+|---|---|
+| Generic `RuntimeException` fırlatılıyor | ✅ **Users akışında çözüldü** (Product/Category/Tag halen `RuntimeException` kullanıyor) |
+| HTTP status code hep 200/500 | ✅ **Users akışında çözüldü** (201/400/401/409 dönüyor) |
+| Validation eklenmemiş | 🟡 **Kısmi** — `RegisterRequest` ve `LoginRequest` için `@Valid` kuruldu; CRUD DTO'larında halen yok |
+
+### 18.10 Sonraki adımlar (öneri)
+
+1. Aynı paterni Product/Category/Tag için uygula:
+   - `ProductNotFoundException extends BusinessException` (404 Not Found)
+   - `CategoryNotFoundException`, `TagNotFoundException`
+2. Login başarılı dönüşünü `String` yerine `LoginResponse {token, expiresAt}` yap (JWT için zemin).
+3. `RegisterRequest`'e parola karmaşıklık doğrulayıcısı ekle (`@Pattern`).
+4. Diğer controller'larda da `@Valid` zorunlu kıl.
+
+---
+
+## 19. Tek Cümle Özet
 
 > Spring-starter projesi, Spring Boot'un **`@RestController` + `@Service` + `JpaRepository` + `@Entity`** dörtlüsünü en yalın şekliyle gösteren, **UUID ID'li 3 entity** üzerinden **15 REST endpoint** sağlayan, kapsamlı DTO ayrıştırması (Create/Created/Get/List/Update/Updated) ile **eğitim odaklı bir CRUD başlangıç projesidir** — Library projesinin daha basit ve yorumlu kardeşi.

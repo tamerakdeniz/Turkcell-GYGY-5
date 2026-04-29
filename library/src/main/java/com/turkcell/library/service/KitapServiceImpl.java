@@ -14,6 +14,7 @@ import com.turkcell.library.entity.Kategori;
 import com.turkcell.library.entity.Kitap;
 import com.turkcell.library.entity.Yayinevi;
 import com.turkcell.library.entity.Yazar;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.KategoriRepository;
 import com.turkcell.library.repository.KitapRepository;
 import com.turkcell.library.repository.YayineviRepository;
@@ -39,9 +40,9 @@ public class KitapServiceImpl {
 
     public KitapResponse create(CreateKitapRequest request) {
         Kategori kategori = kategoriRepository.findById(request.getKategoriId())
-                .orElseThrow(() -> new RuntimeException("Kategori bulunamadı: " + request.getKategoriId()));
+                .orElseThrow(() -> new EntityNotFoundException("Kategori", request.getKategoriId()));
         Yayinevi yayinevi = yayineviRepository.findById(request.getYayineviId())
-                .orElseThrow(() -> new RuntimeException("Yayınevi bulunamadı: " + request.getYayineviId()));
+                .orElseThrow(() -> new EntityNotFoundException("Yayınevi", request.getYayineviId()));
 
         Kitap kitap = new Kitap();
         kitap.setIsbn(request.getIsbn());
@@ -67,17 +68,17 @@ public class KitapServiceImpl {
 
     public KitapResponse getById(Long id) {
         Kitap kitap = kitapRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kitap bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap", id));
         return toResponse(kitap);
     }
 
     public KitapResponse update(Long id, UpdateKitapRequest request) {
         Kitap kitap = kitapRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kitap bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap", id));
         Kategori kategori = kategoriRepository.findById(request.getKategoriId())
-                .orElseThrow(() -> new RuntimeException("Kategori bulunamadı: " + request.getKategoriId()));
+                .orElseThrow(() -> new EntityNotFoundException("Kategori", request.getKategoriId()));
         Yayinevi yayinevi = yayineviRepository.findById(request.getYayineviId())
-                .orElseThrow(() -> new RuntimeException("Yayınevi bulunamadı: " + request.getYayineviId()));
+                .orElseThrow(() -> new EntityNotFoundException("Yayınevi", request.getYayineviId()));
 
         kitap.setIsbn(request.getIsbn());
         kitap.setAnaKategori(kategori);
@@ -96,7 +97,7 @@ public class KitapServiceImpl {
 
     public void delete(Long id) {
         Kitap kitap = kitapRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kitap bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap", id));
         kitapRepository.delete(kitap);
     }
 

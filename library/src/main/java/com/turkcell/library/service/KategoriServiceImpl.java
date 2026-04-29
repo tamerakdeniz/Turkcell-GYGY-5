@@ -9,6 +9,7 @@ import com.turkcell.library.dto.kategori.CreateKategoriRequest;
 import com.turkcell.library.dto.kategori.KategoriResponse;
 import com.turkcell.library.dto.kategori.UpdateKategoriRequest;
 import com.turkcell.library.entity.Kategori;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.KategoriRepository;
 
 @Service
@@ -26,7 +27,7 @@ public class KategoriServiceImpl {
         kategori.setAciklama(request.getAciklama());
         if (request.getUstKategoriId() != null) {
             Kategori ust = kategoriRepository.findById(request.getUstKategoriId())
-                    .orElseThrow(() -> new RuntimeException("Üst kategori bulunamadı: " + request.getUstKategoriId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Üst kategori", request.getUstKategoriId()));
             kategori.setUstKategori(ust);
         }
         return toResponse(kategoriRepository.save(kategori));
@@ -40,18 +41,18 @@ public class KategoriServiceImpl {
 
     public KategoriResponse getById(Long id) {
         Kategori kategori = kategoriRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kategori bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Kategori", id));
         return toResponse(kategori);
     }
 
     public KategoriResponse update(Long id, UpdateKategoriRequest request) {
         Kategori kategori = kategoriRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kategori bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Kategori", id));
         kategori.setAd(request.getAd());
         kategori.setAciklama(request.getAciklama());
         if (request.getUstKategoriId() != null) {
             Kategori ust = kategoriRepository.findById(request.getUstKategoriId())
-                    .orElseThrow(() -> new RuntimeException("Üst kategori bulunamadı: " + request.getUstKategoriId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Üst kategori", request.getUstKategoriId()));
             kategori.setUstKategori(ust);
         } else {
             kategori.setUstKategori(null);
@@ -61,7 +62,7 @@ public class KategoriServiceImpl {
 
     public void delete(Long id) {
         Kategori kategori = kategoriRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kategori bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Kategori", id));
         kategoriRepository.delete(kategori);
     }
 

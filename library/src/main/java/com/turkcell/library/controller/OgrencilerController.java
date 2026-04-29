@@ -2,6 +2,7 @@ package com.turkcell.library.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.turkcell.library.dto.ogrenci.CreateOgrenciRequest;
@@ -27,6 +29,7 @@ public class OgrencilerController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public OgrenciResponse create(@RequestBody CreateOgrenciRequest request) {
         return ogrenciService.create(request);
     }
@@ -47,6 +50,7 @@ public class OgrencilerController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         ogrenciService.delete(id);
     }

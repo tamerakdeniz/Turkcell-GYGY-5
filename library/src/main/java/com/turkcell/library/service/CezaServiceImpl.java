@@ -12,6 +12,7 @@ import com.turkcell.library.dto.ceza.UpdateCezaRequest;
 import com.turkcell.library.entity.Ceza;
 import com.turkcell.library.entity.OduncAlma;
 import com.turkcell.library.entity.Ogrenci;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.CezaRepository;
 import com.turkcell.library.repository.OduncAlmaRepository;
 import com.turkcell.library.repository.OgrenciRepository;
@@ -33,9 +34,9 @@ public class CezaServiceImpl {
 
     public CezaResponse create(CreateCezaRequest request) {
         Ogrenci ogrenci = ogrenciRepository.findById(request.getOgrenciId())
-                .orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı: " + request.getOgrenciId()));
+                .orElseThrow(() -> new EntityNotFoundException("Öğrenci", request.getOgrenciId()));
         OduncAlma oduncAlma = oduncAlmaRepository.findById(request.getOduncId())
-                .orElseThrow(() -> new RuntimeException("Ödünç kaydı bulunamadı: " + request.getOduncId()));
+                .orElseThrow(() -> new EntityNotFoundException("Ödünç kaydı", request.getOduncId()));
 
         Ceza ceza = new Ceza();
         ceza.setOgrenci(ogrenci);
@@ -55,13 +56,13 @@ public class CezaServiceImpl {
 
     public CezaResponse getById(Long id) {
         Ceza ceza = cezaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ceza bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Ceza", id));
         return toResponse(ceza);
     }
 
     public CezaResponse update(Long id, UpdateCezaRequest request) {
         Ceza ceza = cezaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ceza bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Ceza", id));
         ceza.setCezaMiktari(request.getCezaMiktari());
         ceza.setCezaNedeni(request.getCezaNedeni());
         ceza.setOdendiMi(request.getOdendiMi());
@@ -71,7 +72,7 @@ public class CezaServiceImpl {
 
     public void delete(Long id) {
         Ceza ceza = cezaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ceza bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Ceza", id));
         cezaRepository.delete(ceza);
     }
 

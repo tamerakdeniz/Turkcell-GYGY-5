@@ -9,6 +9,7 @@ import com.turkcell.library.dto.gorevli.CreateGorevliRequest;
 import com.turkcell.library.dto.gorevli.GorevliResponse;
 import com.turkcell.library.dto.gorevli.UpdateGorevliRequest;
 import com.turkcell.library.entity.Gorevli;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.GorevliRepository;
 
 @Service
@@ -44,13 +45,13 @@ public class GorevliServiceImpl {
 
     public GorevliResponse getById(Long id) {
         Gorevli gorevli = gorevliRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Görevli bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Görevli", id));
         return toResponse(gorevli);
     }
 
     public GorevliResponse update(Long id, UpdateGorevliRequest request) {
         Gorevli gorevli = gorevliRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Görevli bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Görevli", id));
         gorevli.setTcKimlik(request.getTcKimlik());
         gorevli.setKullaniciAdi(request.getKullaniciAdi());
         gorevli.setAd(request.getAd());
@@ -69,7 +70,7 @@ public class GorevliServiceImpl {
 
     public void delete(Long id) {
         Gorevli gorevli = gorevliRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Görevli bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Görevli", id));
         gorevliRepository.delete(gorevli);
     }
 

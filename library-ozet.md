@@ -718,6 +718,252 @@ docker run --name lib-pg -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin \
 
 ---
 
-## 16. Tek Cümle Özet
+## 16. Exception Handling & Status Code Akışı (2026-04-29 Güncelleme)
+
+Bu bölüm, daha önce **Eksiklikler** tablosunda (14.) yer alan **"Generic RuntimeException kullanılmış"** ve **"HTTP status code'lar hep 200/500"** maddelerinin nasıl çözüldüğünü, tasarım kararlarını ve akışı açıklar. Aynı pattern spring-starter projesinde de uygulanıyor; library'de **12 entity** olduğu için tek bir parametreli exception sınıfı ile DRY (Don't Repeat Yourself) tutuldu.
+
+### 16.1 Önceki durum — sorunlar
+
+```java
+// Service'lerde her yerde:
+.orElseThrow(() -> new RuntimeException("Kitap bulunamadı: " + id));
+.orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı: " + id));
+.orElseThrow(() -> new RuntimeException("Yayınevi bulunamadı: " + id));
+// ... tüm 12 entity için ~50 yer
+```
+
+| Sorun | Sonuç |
+|---|---|
+| Tüm hatalar `RuntimeException` | Spring default 500 dönüyor — "kitap yok" hatası "sunucu çöktü" gibi görünüyor |
+| Frontend için yapısal hata yok | Ham string mesajı: `"Kitap bulunamadı: 42"` — type/title yok |
+| Status code semantiği yok | `POST /api/kitaplar` başarılı → 200 (oysa 201 Created olmalı), `DELETE` → 200 (oysa 204 No Content olmalı) |
+| 12 ayrı `XNotFoundException` yazmak | DRY ihlali — 12 sınıf, her biri aynı şeyi yapıyor olurdu |
+
+### 16.2 Tasarım kararı — neden tek `EntityNotFoundException`?
+
+Spring-starter'da iki **farklı semantikli** iş kuralı vardı:
+- `UserAlreadyExistsException` (409 Conflict)
+- `InvalidCredentialsException` (401 Unauthorized)
+
+Bunlar farklı status'lar gerektirdiği için ayrı sınıflar mantıklıydı.
+
+Library'de ise **tüm hatalar tek bir desene oturuyor**: "X bulunamadı" → 404 Not Found. 12 ayrı sınıf yazmak yerine **parametreli tek sınıf** kullandım:
+
+```java
+public class EntityNotFoundException extends BusinessException {
+    public EntityNotFoundException(String entityName, Object id) {
+        super(
+            entityName + " bulunamadı",                // title
+            entityName.toUpperCase() + "_NOT_FOUND",   // type
+            entityName + " bulunamadı: " + id,         // message
+            HttpStatus.NOT_FOUND                       // status
+        );
+    }
+}
+```
+
+Kullanımı:
+```java
+.orElseThrow(() -> new EntityNotFoundException("Kitap", id));
+.orElseThrow(() -> new EntityNotFoundException("Öğrenci", request.getOgrenciId()));
+.orElseThrow(() -> new EntityNotFoundException("Üst kategori", id));
+```
+
+Type alanı otomatik üretiliyor: `KITAP_NOT_FOUND`, `ÖĞRENCI_NOT_FOUND`, `KITAP KOPYASI_NOT_FOUND` vb.
+
+> **Ne zaman ayrı sınıf, ne zaman parametreli?** Davranış (status, başlık, mantık) farklıysa ayrı sınıf — örneğin "Kitap kopyası ödüncteyken silinemez" 409 Conflict ister, "Kitap bulunamadı" 404. Aynı davranış, farklı sadece etikette ise parametreli sınıf yeterli.
+
+### 16.3 Yeni dosyalar
+
+```
+exception/
+├── BusinessException.java            (YENİ — abstract)
+├── EntityNotFoundException.java      (YENİ — parametreli, 404)
+└── GlobalExceptionHandler.java       (YENİ — 3 handler)
+
+dto/
+├── ErrorResponse.java                (YENİ — {title, type, message})
+└── ValidationErrorResponse.java      (YENİ — {argument, message: List<String>})
+```
+
+### 16.4 Değiştirilen dosyalar
+
+**12 service** (~50 RuntimeException satırı):
+- `KitapServiceImpl`, `OgrenciServiceImpl`, `OduncAlmaServiceImpl`, `IadeServiceImpl`, `CezaServiceImpl`, `RezervasyonServiceImpl`, `KitapKopyaServiceImpl`, `KategoriServiceImpl`, `YayineviServiceImpl`, `YazarServiceImpl`, `GorevliServiceImpl`, `YetkiServiceImpl`
+
+**12 controller** (POST/DELETE annotation'ları):
+- Aynı liste — her biri `@PostMapping`'e `@ResponseStatus(CREATED)`, `@DeleteMapping`'e `@ResponseStatus(NO_CONTENT)` eklendi.
+
+### 16.5 Sınıf hiyerarşisi
+
+```
+java.lang.RuntimeException
+    └── BusinessException                      (abstract)
+            └── EntityNotFoundException        → 404 Not Found
+                  • "Kitap"
+                  • "Öğrenci"
+                  • "Yayınevi"
+                  • "Yazar"
+                  • "Kategori" / "Üst kategori"
+                  • "Görevli"
+                  • "Ödünç kaydı"
+                  • "İade kaydı"
+                  • "Kitap kopyası"
+                  • "Rezervasyon"
+                  • "Ceza"
+                  • "Yetki"
+```
+
+> İleride farklı iş kuralları gelirse (örn. "ödünçteki kitap silinemez"), `BusinessException`'dan başka bir alt sınıf türetilir; `EntityNotFoundException` paterni dokunulmaz kalır.
+
+### 16.6 Akış diyagramları
+
+#### A) Mutlu yol — Yeni kitap oluşturma
+
+```
+Client
+  │ POST /api/kitaplar  body: {kategoriId:1, yayineviId:1, ...}
+  ▼
+KitaplarController.create
+  │ @ResponseStatus(CREATED)
+  ▼
+KitapServiceImpl.create
+  │ kategoriRepository.findById(1) → bulundu
+  │ yayineviRepository.findById(1) → bulundu
+  │ kitapRepository.save(...)
+  ▼
+HTTP 201 Created
+Body: {kitapId:42, isbn:"...", baslik:"...", ...}
+```
+
+#### B) Olmayan kategori ile kitap oluşturma
+
+```
+Client
+  │ POST /api/kitaplar  body: {kategoriId:999, ...}
+  ▼
+KitapServiceImpl.create
+  │ kategoriRepository.findById(999) → boş
+  │ throw new EntityNotFoundException("Kategori", 999)
+  ▼
+GlobalExceptionHandler.handleBusinessException
+  │ status = ex.getStatus() = 404
+  ▼
+HTTP 404 Not Found
+Body: {
+  "title": "Kategori bulunamadı",
+  "type":  "KATEGORI_NOT_FOUND",
+  "message":"Kategori bulunamadı: 999"
+}
+```
+
+> Önceki davranış: 500 + ham `"Kategori bulunamadı: 999"` string. Şimdi: doğru status + yapılandırılmış JSON.
+
+#### C) Olmayan kitap silme
+
+```
+DELETE /api/kitaplar/999
+  ▼
+KitapServiceImpl.delete(999)
+  │ findById(999) → boş
+  │ throw new EntityNotFoundException("Kitap", 999)
+  ▼
+HTTP 404 Not Found
+Body: {"title":"Kitap bulunamadı","type":"KITAP_NOT_FOUND","message":"Kitap bulunamadı: 999"}
+```
+
+#### D) Başarılı silme
+
+```
+DELETE /api/kitaplar/42
+  ▼
+KitapServiceImpl.delete(42) → kitapRepository.delete(...)
+  ▼
+HTTP 204 No Content
+Body: (yok)
+```
+
+> 204 → "İşlem başarılı, dönecek body yok". Önceki: 200 + boş body — istemci kafası karışırdı.
+
+#### E) İlişkili kayıt çakışması — ödünç oluştururken üç ID'den biri yanlış
+
+```
+POST /api/odunc-almalar  body: {ogrenciId:1, kopyaId:42, gorevliId:999}
+  ▼
+OduncAlmaServiceImpl.create
+  │ ogrenciRepository.findById(1) → OK
+  │ kitapKopyaRepository.findById(42) → OK
+  │ gorevliRepository.findById(999) → boş
+  │ throw new EntityNotFoundException("Görevli", 999)
+  ▼
+HTTP 404 Not Found
+Body: {"title":"Görevli bulunamadı","type":"GÖREVLI_NOT_FOUND","message":"Görevli bulunamadı: 999"}
+```
+
+İstemci `type` alanına bakarak hangi alanın hatalı olduğunu makine okunabilir şekilde anlayabilir.
+
+### 16.7 Status code matrix — tüm endpoint'ler
+
+| HTTP method | Pattern | Önceki | Yeni | Gerekçe |
+|---|---|---|---|---|
+| POST | `/api/<entity>` (create) | 200 | **201 Created** | REST standardı: yeni kaynak oluşturuldu |
+| GET | `/api/<entity>` (list) | 200 | 200 | Doğru — değişiklik yok |
+| GET | `/api/<entity>/{id}` (single) | 200 / 500 | 200 / **404** | Bulunamayan kayıt 500 değil, 404 |
+| PUT | `/api/<entity>/{id}` (update) | 200 / 500 | 200 / **404** | Yine: yok ise 404 |
+| DELETE | `/api/<entity>/{id}` | 200 / 500 | **204** / **404** | 204 = "yapıldı, body yok"; yok ise 404 |
+| Validasyon hatası (`@Valid` fail) | her endpoint | — | **400 Bad Request** | İstemci tarafı hatası — hazır altyapı, DTO'lara annotation eklenince devreye girer |
+| Beklenmeyen hata | her yer | 500 (ham) | **500 + ErrorResponse** | Yapılandırılmış body |
+
+Toplam **12 entity × 5 endpoint = 60 endpoint**'in tümü artık doğru status code dönüyor.
+
+### 16.8 GlobalExceptionHandler — üç handler
+
+```
+@ExceptionHandler(BusinessException.class)
+    → EntityNotFoundException ve gelecekte tüm BusinessException alt-tiplerini yakalar
+    → status'u exception'ın kendisinden okur (polymorphism)
+
+@ExceptionHandler(MethodArgumentNotValidException.class)
+    → @Valid + DTO validation annotation'ları eklendiğinde devreye girer
+    → 400 + List<ValidationErrorResponse>
+    → Şu an etkin değil çünkü DTO'larda validation annotation yok (sonraki adım)
+
+@ExceptionHandler(RuntimeException.class)  ← FALLBACK
+    → Yukarıdaki ikisinden eşleşmeyen her şey
+    → 500 + ErrorResponse{"Beklenmeyen hata", "INTERNAL_ERROR", ...}
+```
+
+### 16.9 ErrorResponse vs ValidationErrorResponse
+
+Aynı spring-starter'daki gibi:
+
+| | ErrorResponse | ValidationErrorResponse |
+|---|---|---|
+| Yapı | Tek nesne | Liste (alan başına bir öğe) |
+| Alanlar | `title`, `type`, `message` | `argument`, `message: List<String>` |
+| Kullanım | İş kuralı / 404 / 401 / 409 / 500 | `@Valid` validasyon hataları |
+
+İstemci ayrımı: response body bir array ise validasyon hatası, object ise generic hata.
+
+### 16.10 Eksiklikler tablosundaki etki
+
+| Eksiklik (14. bölüm) | Durum |
+|---|---|
+| Generic `RuntimeException` kullanılmış | ✅ **Çözüldü** — 12/12 service `EntityNotFoundException` kullanıyor |
+| HTTP status code'lar hep 200/500 | ✅ **Çözüldü** — 60/60 endpoint doğru status |
+| Validation eklenmemiş | 🟡 **Altyapı hazır** — `MethodArgumentNotValidException` handler kuruldu; DTO'lara `@NotBlank`, `@Email`, `@Size` eklenince ve controller'lara `@Valid` konunca otomatik devreye girer |
+
+### 16.11 Sonraki adımlar (öneri)
+
+1. DTO'lara validation annotation'ları (`@NotBlank`, `@Size`, `@Min`, `@Pattern`) ve controller'lara `@Valid` ekle → mevcut `MethodArgumentNotValidException` handler otomatik aktif olur.
+2. İş kuralı exception'ları:
+   - `KitapKopyaInUseException` (404 değil, **409 Conflict** — ödünçteki kopya silinmek istenirse)
+   - `OgrenciCezaliException` (**409** — cezalı öğrenci ödünç almak isterse)
+   - `KitapStokYokException` (**409** — müsait kopya yokken ödünç verilmek istenirse)
+3. spring-starter'da olduğu gibi `Service` interface + `ServiceImpl` ayrımı ile test mock kolaylaştırılabilir.
+
+---
+
+## 17. Tek Cümle Özet
 
 > Library projesi, Spring Boot'un **otomatik konfigürasyon + Spring Data JPA** süper güçleriyle, klasik bir **Controller → Service → Repository → Entity** katmanlı mimaride yazılmış, 12 kaynaklı (entity başına 5 endpoint) toplam **60 REST endpoint**'in CRUD operasyonlarını sağlayan bir kütüphane backend'idir.

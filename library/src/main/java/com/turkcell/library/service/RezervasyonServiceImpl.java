@@ -12,6 +12,7 @@ import com.turkcell.library.dto.rezervasyon.UpdateRezervasyonRequest;
 import com.turkcell.library.entity.Kitap;
 import com.turkcell.library.entity.Ogrenci;
 import com.turkcell.library.entity.Rezervasyon;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.KitapRepository;
 import com.turkcell.library.repository.OgrenciRepository;
 import com.turkcell.library.repository.RezervasyonRepository;
@@ -33,9 +34,9 @@ public class RezervasyonServiceImpl {
 
     public RezervasyonResponse create(CreateRezervasyonRequest request) {
         Ogrenci ogrenci = ogrenciRepository.findById(request.getOgrenciId())
-                .orElseThrow(() -> new RuntimeException("Öğrenci bulunamadı: " + request.getOgrenciId()));
+                .orElseThrow(() -> new EntityNotFoundException("Öğrenci", request.getOgrenciId()));
         Kitap kitap = kitapRepository.findById(request.getKitapId())
-                .orElseThrow(() -> new RuntimeException("Kitap bulunamadı: " + request.getKitapId()));
+                .orElseThrow(() -> new EntityNotFoundException("Kitap", request.getKitapId()));
 
         Rezervasyon rezervasyon = new Rezervasyon();
         rezervasyon.setOgrenci(ogrenci);
@@ -54,13 +55,13 @@ public class RezervasyonServiceImpl {
 
     public RezervasyonResponse getById(Long id) {
         Rezervasyon rezervasyon = rezervasyonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rezervasyon bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Rezervasyon", id));
         return toResponse(rezervasyon);
     }
 
     public RezervasyonResponse update(Long id, UpdateRezervasyonRequest request) {
         Rezervasyon rezervasyon = rezervasyonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rezervasyon bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Rezervasyon", id));
         rezervasyon.setSonGecerlilikTarihi(request.getSonGecerlilikTarihi());
         rezervasyon.setDurum(request.getDurum());
         return toResponse(rezervasyonRepository.save(rezervasyon));
@@ -68,7 +69,7 @@ public class RezervasyonServiceImpl {
 
     public void delete(Long id) {
         Rezervasyon rezervasyon = rezervasyonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rezervasyon bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Rezervasyon", id));
         rezervasyonRepository.delete(rezervasyon);
     }
 

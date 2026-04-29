@@ -9,6 +9,7 @@ import com.turkcell.library.dto.yetki.CreateYetkiRequest;
 import com.turkcell.library.dto.yetki.UpdateYetkiRequest;
 import com.turkcell.library.dto.yetki.YetkiResponse;
 import com.turkcell.library.entity.Yetki;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.YetkiRepository;
 
 @Service
@@ -36,13 +37,13 @@ public class YetkiServiceImpl {
 
     public YetkiResponse getById(Long id) {
         Yetki yetki = yetkiRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yetki bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Yetki", id));
         return toResponse(yetki);
     }
 
     public YetkiResponse update(Long id, UpdateYetkiRequest request) {
         Yetki yetki = yetkiRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yetki bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Yetki", id));
         yetki.setYetkiAd(request.getYetkiAd());
         yetki.setAciklama(request.getAciklama());
         yetki.setModul(request.getModul());
@@ -51,7 +52,7 @@ public class YetkiServiceImpl {
 
     public void delete(Long id) {
         Yetki yetki = yetkiRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yetki bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Yetki", id));
         yetkiRepository.delete(yetki);
     }
 

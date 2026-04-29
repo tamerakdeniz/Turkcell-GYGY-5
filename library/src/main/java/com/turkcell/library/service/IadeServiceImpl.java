@@ -13,6 +13,7 @@ import com.turkcell.library.entity.Gorevli;
 import com.turkcell.library.entity.Iade;
 import com.turkcell.library.entity.KitapKopya;
 import com.turkcell.library.entity.OduncAlma;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.GorevliRepository;
 import com.turkcell.library.repository.IadeRepository;
 import com.turkcell.library.repository.KitapKopyaRepository;
@@ -38,9 +39,9 @@ public class IadeServiceImpl {
 
     public IadeResponse create(CreateIadeRequest request) {
         OduncAlma oduncAlma = oduncAlmaRepository.findById(request.getOduncId())
-                .orElseThrow(() -> new RuntimeException("Ödünç kaydı bulunamadı: " + request.getOduncId()));
+                .orElseThrow(() -> new EntityNotFoundException("Ödünç kaydı", request.getOduncId()));
         Gorevli gorevli = gorevliRepository.findById(request.getGorevliId())
-                .orElseThrow(() -> new RuntimeException("Görevli bulunamadı: " + request.getGorevliId()));
+                .orElseThrow(() -> new EntityNotFoundException("Görevli", request.getGorevliId()));
 
         Iade iade = new Iade();
         iade.setOduncAlma(oduncAlma);
@@ -74,15 +75,15 @@ public class IadeServiceImpl {
 
     public IadeResponse getById(Long id) {
         Iade iade = iadeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("İade kaydı bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("İade kaydı", id));
         return toResponse(iade);
     }
 
     public IadeResponse update(Long id, UpdateIadeRequest request) {
         Iade iade = iadeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("İade kaydı bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("İade kaydı", id));
         Gorevli gorevli = gorevliRepository.findById(request.getGorevliId())
-                .orElseThrow(() -> new RuntimeException("Görevli bulunamadı: " + request.getGorevliId()));
+                .orElseThrow(() -> new EntityNotFoundException("Görevli", request.getGorevliId()));
 
         iade.setGorevli(gorevli);
         iade.setKitapDurumu(request.getKitapDurumu());
@@ -92,7 +93,7 @@ public class IadeServiceImpl {
 
     public void delete(Long id) {
         Iade iade = iadeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("İade kaydı bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("İade kaydı", id));
         iadeRepository.delete(iade);
     }
 

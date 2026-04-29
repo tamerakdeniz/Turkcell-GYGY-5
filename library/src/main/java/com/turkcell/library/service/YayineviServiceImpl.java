@@ -9,6 +9,7 @@ import com.turkcell.library.dto.yayinevi.CreateYayineviRequest;
 import com.turkcell.library.dto.yayinevi.UpdateYayineviRequest;
 import com.turkcell.library.dto.yayinevi.YayineviResponse;
 import com.turkcell.library.entity.Yayinevi;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.YayineviRepository;
 
 @Service
@@ -38,13 +39,13 @@ public class YayineviServiceImpl {
 
     public YayineviResponse getById(Long id) {
         Yayinevi yayinevi = yayineviRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yayınevi bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Yayınevi", id));
         return toResponse(yayinevi);
     }
 
     public YayineviResponse update(Long id, UpdateYayineviRequest request) {
         Yayinevi yayinevi = yayineviRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yayınevi bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Yayınevi", id));
         yayinevi.setAd(request.getAd());
         yayinevi.setAdres(request.getAdres());
         yayinevi.setTelefon(request.getTelefon());
@@ -55,7 +56,7 @@ public class YayineviServiceImpl {
 
     public void delete(Long id) {
         Yayinevi yayinevi = yayineviRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yayınevi bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Yayınevi", id));
         yayineviRepository.delete(yayinevi);
     }
 

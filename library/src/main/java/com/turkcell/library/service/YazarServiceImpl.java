@@ -9,6 +9,7 @@ import com.turkcell.library.dto.yazar.CreateYazarRequest;
 import com.turkcell.library.dto.yazar.UpdateYazarRequest;
 import com.turkcell.library.dto.yazar.YazarResponse;
 import com.turkcell.library.entity.Yazar;
+import com.turkcell.library.exception.EntityNotFoundException;
 import com.turkcell.library.repository.YazarRepository;
 
 @Service
@@ -39,13 +40,13 @@ public class YazarServiceImpl {
 
     public YazarResponse getById(Long id) {
         Yazar yazar = yazarRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yazar bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Yazar", id));
         return toResponse(yazar);
     }
 
     public YazarResponse update(Long id, UpdateYazarRequest request) {
         Yazar yazar = yazarRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yazar bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Yazar", id));
         yazar.setAd(request.getAd());
         yazar.setSoyad(request.getSoyad());
         yazar.setDogumTarihi(request.getDogumTarihi());
@@ -57,7 +58,7 @@ public class YazarServiceImpl {
 
     public void delete(Long id) {
         Yazar yazar = yazarRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yazar bulunamadı: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Yazar", id));
         yazarRepository.delete(yazar);
     }
 
