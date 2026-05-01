@@ -2,32 +2,17 @@ package com.turkcell.spring_starter.dto;
 
 import java.util.UUID;
 
-public class UpdateProductRequest {
-    private String name;
-    private String description;
-    private UUID categoryId;
+import org.hibernate.validator.constraints.Length;
 
-    public String getName() {
-        return name;
-    }
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public UUID getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(UUID categoryId) {
-        this.categoryId = categoryId;
-    }
-}
+public record UpdateProductRequest(
+    @NotBlank
+    @Length(min = 3, max = 100)
+    String name,
+    @Length(max = 500)
+    String description,
+    @NotNull
+    UUID categoryId
+) {}

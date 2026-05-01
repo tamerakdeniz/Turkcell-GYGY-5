@@ -14,92 +14,85 @@ import com.turkcell.spring_starter.dto.UpdateProductRequest;
 import com.turkcell.spring_starter.dto.UpdatedProductResponse;
 import com.turkcell.spring_starter.entity.Category;
 import com.turkcell.spring_starter.entity.Product;
-import com.turkcell.spring_starter.repository.CategoryRepository;
+import com.turkcell.spring_starter.exception.EntityNotFoundException;
 import com.turkcell.spring_starter.repository.ProductRepository;
 
 @Service
-public class ProductServiceImpl {
+public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
-    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryService categoryService) {
         this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
+        this.categoryService = categoryService;
     }
 
-    public CreatedProductResponse create(CreateProductRequest createProductRequest) {
-        Category category = categoryRepository.findById(createProductRequest.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + createProductRequest.getCategoryId()));
+    @Override
+    public CreatedProductResponse create(CreateProductRequest request) {
+        Category category = categoryService.getCategoryById(request.categoryId());
 
         Product product = new Product();
-        product.setName(createProductRequest.getName());
-        product.setDescription(createProductRequest.getDescription());
+        product.setName(request.name());
+        product.setDescription(request.description());
         product.setCategory(category);
 
         product = productRepository.save(product);
 
-        CreatedProductResponse response = new CreatedProductResponse();
-        response.setId(product.getId());
-        response.setName(product.getName());
-        response.setDescription(product.getDescription());
-        response.setCategoryId(product.getCategory().getId());
-
-        return response;
+        return new CreatedProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getCategory().getId());
     }
 
+    @Override
     public List<ListProductResponse> getAll() {
-        List<Product> products = productRepository.findAll();
-
-        return products.stream().map(product -> {
-            ListProductResponse listProductResponse = new ListProductResponse();
-            listProductResponse.setId(product.getId());
-            listProductResponse.setName(product.getName());
-            listProductResponse.setDescription(product.getDescription());
-            listProductResponse.setCategoryName(product.getCategory().getName());
-            return listProductResponse;
-        }).collect(Collectors.toList());
+        return productRepository.findAll().stream()
+                .map(product -> new ListProductResponse(
+                        product.getId(),
+                        product.getName(),
+                        product.getDescription(),
+                        product.getCategory().getName()))
+                .collect(Collectors.toList());
     }
 
+    @Override
     public GetProductResponse getById(UUID id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
-        GetProductResponse response = new GetProductResponse();
-        response.setId(product.getId());
-        response.setName(product.getName());
-        response.setDescription(product.getDescription());
-        response.setCategoryId(product.getCategory().getId());
-        response.setCategoryName(product.getCategory().getName());
-
-        return response;
+        Product product = findProductById(id);
+        return new GetProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getCategory().getId(),
+                product.getCategory().getName());
     }
 
-    public UpdatedProductResponse update(UUID id, UpdateProductRequest updateProductRequest) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+    @Override
+    public UpdatedProductResponse update(UUID id, UpdateProductRequest request) {
+        Product product = findProductById(id);
+        Category category = categoryService.getCategoryById(request.categoryId());
 
-        Category category = categoryRepository.findById(updateProductRequest.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + updateProductRequest.getCategoryId()));
-
-        product.setName(updateProductRequest.getName());
-        product.setDescription(updateProductRequest.getDescription());
+        product.setName(request.name());
+        product.setDescription(request.description());
         product.setCategory(category);
 
         product = productRepository.save(product);
 
-        UpdatedProductResponse response = new UpdatedProductResponse();
-        response.setId(product.getId());
-        response.setName(product.getName());
-        response.setDescription(product.getDescription());
-        response.setCategoryId(product.getCategory().getId());
-
-        return response;
+        return new UpdatedProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getCategory().getId());
     }
 
+    @Override
     public void delete(UUID id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-
+        Product product = findProductById(id);
         productRepository.delete(product);
+    }
+
+    private Product findProductById(UUID id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Ürün bulunamadı: " + id));
     }
 }

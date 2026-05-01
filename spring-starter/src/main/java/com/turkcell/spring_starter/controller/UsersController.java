@@ -9,28 +9,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.turkcell.spring_starter.dto.LoginRequest;
 import com.turkcell.spring_starter.dto.RegisterRequest;
-import com.turkcell.spring_starter.service.UserServiceImpl;
+import com.turkcell.spring_starter.service.UserService;
 
 import jakarta.validation.Valid;
 
 @RequestMapping("/api/users")
 @RestController
 public class UsersController {
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
-    public UsersController(UserServiceImpl userService) {
+    public UsersController(UserService userService) {
         this.userService = userService;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public String register(@RequestBody @Valid RegisterRequest registerRequest) {
-        return this.userService.registerUser(registerRequest);
+    public String register(@RequestBody @Valid RegisterRequest request) {
+        return userService.registerUser(request);
     }
 
     @PostMapping("login")
     @ResponseStatus(HttpStatus.OK)
-    public String login(@RequestBody @Valid LoginRequest loginRequest) {
-        return this.userService.login(loginRequest);
+    public String login(@RequestBody @Valid LoginRequest request) {
+        return userService.login(request);
     }
 }

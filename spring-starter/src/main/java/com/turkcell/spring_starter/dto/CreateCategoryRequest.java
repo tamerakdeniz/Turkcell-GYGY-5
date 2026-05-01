@@ -1,14 +1,11 @@
 package com.turkcell.spring_starter.dto;
 
-public class CreateCategoryRequest {
-    private String name;
+import org.hibernate.validator.constraints.Length;
 
-    public String getName() {
-        return name;
-    }
+import jakarta.validation.constraints.NotBlank;
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-}
+public record CreateCategoryRequest(
+    @NotBlank
+    @Length(min = 2, max = 100)
+    String name
+) {}

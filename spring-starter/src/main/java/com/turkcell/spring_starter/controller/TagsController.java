@@ -18,39 +18,42 @@ import com.turkcell.spring_starter.dto.GetTagResponse;
 import com.turkcell.spring_starter.dto.ListTagResponse;
 import com.turkcell.spring_starter.dto.UpdateTagRequest;
 import com.turkcell.spring_starter.dto.UpdatedTagResponse;
-import com.turkcell.spring_starter.service.TagServiceImpl;
+import com.turkcell.spring_starter.service.TagService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/tags")
 public class TagsController {
-    private final TagServiceImpl tagServiceImpl;
+    private final TagService tagService;
 
-    public TagsController(TagServiceImpl tagServiceImpl) {
-        this.tagServiceImpl = tagServiceImpl;
+    public TagsController(TagService tagService) {
+        this.tagService = tagService;
     }
 
     @PostMapping
-    public CreatedTagResponse create(@RequestBody CreateTagRequest createTagRequest) {
-        return tagServiceImpl.create(createTagRequest);
+    public CreatedTagResponse create(@RequestBody @Valid CreateTagRequest request) {
+        return tagService.create(request);
     }
 
     @GetMapping
     public List<ListTagResponse> getAll() {
-        return tagServiceImpl.getAll();
+        return tagService.getAll();
     }
 
     @GetMapping("/{id}")
     public GetTagResponse getById(@PathVariable UUID id) {
-        return tagServiceImpl.getById(id);
+        return tagService.getById(id);
     }
 
     @PutMapping("/{id}")
-    public UpdatedTagResponse update(@PathVariable UUID id, @RequestBody UpdateTagRequest updateTagRequest) {
-        return tagServiceImpl.update(id, updateTagRequest);
+    public UpdatedTagResponse update(@PathVariable UUID id,
+                                     @RequestBody @Valid UpdateTagRequest request) {
+        return tagService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
-        tagServiceImpl.delete(id);
+        tagService.delete(id);
     }
 }

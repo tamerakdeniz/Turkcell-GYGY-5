@@ -1,7 +1,6 @@
 package com.turkcell.spring_starter.service;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -14,103 +13,77 @@ import com.turkcell.spring_starter.dto.ListCategoryResponse;
 import com.turkcell.spring_starter.dto.UpdateCategoryRequest;
 import com.turkcell.spring_starter.dto.UpdatedCategoryResponse;
 import com.turkcell.spring_starter.entity.Category;
+import com.turkcell.spring_starter.exception.EntityNotFoundException;
 import com.turkcell.spring_starter.repository.CategoryRepository;
 
 import jakarta.persistence.EntityManager;
 
 @Service
-public class CategoryServiceImpl {
+public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final EntityManager entityManager;
 
-        public CategoryServiceImpl(CategoryRepository categoryRepository, EntityManager entityManager) {
-            this.categoryRepository = categoryRepository;
-            this.entityManager = entityManager;
-        }
+    public CategoryServiceImpl(CategoryRepository categoryRepository, EntityManager entityManager) {
+        this.categoryRepository = categoryRepository;
+        this.entityManager = entityManager;
+    }
 
-    public CreatedCategoryResponse create(CreateCategoryRequest createCategoryRequest) {
-        // Veritabanında insert-update işlemi çalıştırır. Eğer id alanı null ise insert, değilse update işlemi yapar.
-        // Entity id'e sahipse update işlemi yapar, yoksa (null) insert işlemi yapar.
-
+    @Override
+    public CreatedCategoryResponse create(CreateCategoryRequest request) {
         Category category = new Category();
-        category.setName(createCategoryRequest.getName());
+        category.setName(request.name());
 
-        category = this.categoryRepository.save(category); // ekledikten sonraki halini al
+        category = categoryRepository.save(category);
 
-        CreatedCategoryResponse response = new CreatedCategoryResponse();
-        response.setId(category.getId());
-        response.setName(category.getName());
-
-        return response;
+        return new CreatedCategoryResponse(category.getId(), category.getName());
     }
 
+    @Override
     public List<ListCategoryResponse> getAll() {
-        List<Category> categories = categoryRepository.findAll();
-
-            List<ListCategoryResponse> response = categories.stream().map(category -> {
-            ListCategoryResponse listCategoryResponse = new ListCategoryResponse();
-            listCategoryResponse.setId(category.getId());
-            listCategoryResponse.setName(category.getName());
-            return listCategoryResponse;
-        }).collect(Collectors.toList());
-
-        return response;
+        return categoryRepository.findAll().stream()
+                .map(category -> new ListCategoryResponse(category.getId(), category.getName()))
+                .collect(Collectors.toList());
     }
 
-
-    public List<ListCategoryResponse> search(String query) {        
-
-        // Set<Category> categories = categoryRepository.findByNameLike("%" + query + "%");
-
-        // String Concatination -> KESİNLİKLE YASAK
-        // String jpql = "Select c from Category c Where c.name LIKE '%" + query + "%'";
-
+    @Override
+    public List<ListCategoryResponse> search(String query) {
+        // String concatenation yerine parametreli JPQL — SQL injection güvenli.
         String jpql = "Select c from Category c Where c.name like :query";
 
         List<Category> categories = entityManager
-        .createQuery(jpql, Category.class)
-        .setParameter("query", "%" + query + "%")
-        .getResultList();
+                .createQuery(jpql, Category.class)
+                .setParameter("query", "%" + query + "%")
+                .getResultList();
 
-        List<ListCategoryResponse> responseList = categories.stream().map(category -> {
-            ListCategoryResponse listCategoryResponse = new ListCategoryResponse();
-            listCategoryResponse.setId(category.getId());
-            listCategoryResponse.setName(category.getName());
-            return listCategoryResponse;
-        }).collect(Collectors.toList());
-
-        return responseList;
+        return categories.stream()
+                .map(category -> new ListCategoryResponse(category.getId(), category.getName()))
+                .collect(Collectors.toList());
     }
 
+    @Override
     public GetCategoryResponse getById(UUID id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
-
-        GetCategoryResponse response = new GetCategoryResponse();
-        response.setId(category.getId());
-        response.setName(category.getName());
-
-        return response;
+        Category category = getCategoryById(id);
+        return new GetCategoryResponse(category.getId(), category.getName());
     }
 
-    public UpdatedCategoryResponse update(UUID id, UpdateCategoryRequest updateCategoryRequest) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
-
-        category.setName(updateCategoryRequest.getName());
+    @Override
+    public UpdatedCategoryResponse update(UUID id, UpdateCategoryRequest request) {
+        Category category = getCategoryById(id);
+        category.setName(request.name());
         category = categoryRepository.save(category);
 
-        UpdatedCategoryResponse response = new UpdatedCategoryResponse();
-        response.setId(category.getId());
-        response.setName(category.getName());
-
-        return response;
+        return new UpdatedCategoryResponse(category.getId(), category.getName());
     }
 
+    @Override
     public void delete(UUID id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
-
+        Category category = getCategoryById(id);
         categoryRepository.delete(category);
+    }
+
+    @Override
+    public Category getCategoryById(UUID id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Kategori bulunamadı: " + id));
     }
 }

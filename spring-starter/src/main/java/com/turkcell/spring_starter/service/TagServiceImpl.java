@@ -13,69 +13,58 @@ import com.turkcell.spring_starter.dto.ListTagResponse;
 import com.turkcell.spring_starter.dto.UpdateTagRequest;
 import com.turkcell.spring_starter.dto.UpdatedTagResponse;
 import com.turkcell.spring_starter.entity.Tag;
+import com.turkcell.spring_starter.exception.EntityNotFoundException;
 import com.turkcell.spring_starter.repository.TagRepository;
 
 @Service
-public class TagServiceImpl {
+public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
 
     public TagServiceImpl(TagRepository tagRepository) {
         this.tagRepository = tagRepository;
     }
 
-    public CreatedTagResponse create(CreateTagRequest createTagRequest) {
+    @Override
+    public CreatedTagResponse create(CreateTagRequest request) {
         Tag tag = new Tag();
-        tag.setName(createTagRequest.getName());
+        tag.setName(request.name());
 
         tag = tagRepository.save(tag);
 
-        CreatedTagResponse response = new CreatedTagResponse();
-        response.setId(tag.getId());
-        response.setName(tag.getName());
-
-        return response;
+        return new CreatedTagResponse(tag.getId(), tag.getName());
     }
 
+    @Override
     public List<ListTagResponse> getAll() {
-        List<Tag> tags = tagRepository.findAll();
-
-        return tags.stream().map(tag -> {
-            ListTagResponse listTagResponse = new ListTagResponse();
-            listTagResponse.setId(tag.getId());
-            listTagResponse.setName(tag.getName());
-            return listTagResponse;
-        }).collect(Collectors.toList());
+        return tagRepository.findAll().stream()
+                .map(tag -> new ListTagResponse(tag.getId(), tag.getName()))
+                .collect(Collectors.toList());
     }
 
+    @Override
     public GetTagResponse getById(UUID id) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tag not found with id: " + id));
-
-        GetTagResponse response = new GetTagResponse();
-        response.setId(tag.getId());
-        response.setName(tag.getName());
-
-        return response;
+        Tag tag = getTagById(id);
+        return new GetTagResponse(tag.getId(), tag.getName());
     }
 
-    public UpdatedTagResponse update(UUID id, UpdateTagRequest updateTagRequest) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tag not found with id: " + id));
-
-        tag.setName(updateTagRequest.getName());
+    @Override
+    public UpdatedTagResponse update(UUID id, UpdateTagRequest request) {
+        Tag tag = getTagById(id);
+        tag.setName(request.name());
         tag = tagRepository.save(tag);
 
-        UpdatedTagResponse response = new UpdatedTagResponse();
-        response.setId(tag.getId());
-        response.setName(tag.getName());
-
-        return response;
+        return new UpdatedTagResponse(tag.getId(), tag.getName());
     }
 
+    @Override
     public void delete(UUID id) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tag not found with id: " + id));
-
+        Tag tag = getTagById(id);
         tagRepository.delete(tag);
+    }
+
+    @Override
+    public Tag getTagById(UUID id) {
+        return tagRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Etiket bulunamadı: " + id));
     }
 }

@@ -11,7 +11,7 @@ import com.turkcell.spring_starter.exception.UserAlreadyExistsException;
 import com.turkcell.spring_starter.repository.UserRepository;
 
 @Service
-public class UserServiceImpl {
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -20,37 +20,32 @@ public class UserServiceImpl {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String registerUser(RegisterRequest registerRequest) {
-
-        User userWithEmail = userRepository.findByEmail(registerRequest.getEmail()).orElse(null);
-        if(userWithEmail != null) {
+    @Override
+    public String registerUser(RegisterRequest request) {
+        userRepository.findByEmail(request.email()).ifPresent(existing -> {
             throw new UserAlreadyExistsException("Bu e-posta zaten kayıtlı");
-        }
+        });
 
         User user = new User();
-        user.setEmail(registerRequest.getEmail());
-
-        String encodedPassword = this.passwordEncoder.encode(registerRequest.getPassword());
-        user.setPassword(encodedPassword);
+        user.setEmail(request.email());
+        user.setPassword(passwordEncoder.encode(request.password()));
 
         userRepository.save(user);
 
         return "Kayıt başarılı";
     }
 
-    public String login(LoginRequest loginRequest){
+    @Override
+    public String login(LoginRequest request) {
         String errorMessage = "Giriş bilgileri yanlış";
 
-        User user = this.userRepository
-                        .findByEmail(loginRequest.getEmail())
-                        .orElseThrow(() -> new InvalidCredentialsException(errorMessage));
-        
-        // Kullanıcı var gibi davran
-        boolean passwordMatch = this.passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
-        if(!passwordMatch)
-            throw new InvalidCredentialsException(errorMessage);
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new InvalidCredentialsException(errorMessage));
 
-        // Bu e-posta ile bir kayıt var.
+        boolean passwordMatch = passwordEncoder.matches(request.password(), user.getPassword());
+        if (!passwordMatch) {
+            throw new InvalidCredentialsException(errorMessage);
+        }
 
         return "Giriş başarılı";
     }

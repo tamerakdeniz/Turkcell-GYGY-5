@@ -18,39 +18,42 @@ import com.turkcell.spring_starter.dto.GetProductResponse;
 import com.turkcell.spring_starter.dto.ListProductResponse;
 import com.turkcell.spring_starter.dto.UpdateProductRequest;
 import com.turkcell.spring_starter.dto.UpdatedProductResponse;
-import com.turkcell.spring_starter.service.ProductServiceImpl;
+import com.turkcell.spring_starter.service.ProductService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/products")
 public class ProductsController {
-    private final ProductServiceImpl productServiceImpl;
+    private final ProductService productService;
 
-    public ProductsController(ProductServiceImpl productServiceImpl) {
-        this.productServiceImpl = productServiceImpl;
+    public ProductsController(ProductService productService) {
+        this.productService = productService;
     }
 
     @PostMapping
-    public CreatedProductResponse create(@RequestBody CreateProductRequest createProductRequest) {
-        return productServiceImpl.create(createProductRequest);
+    public CreatedProductResponse create(@RequestBody @Valid CreateProductRequest request) {
+        return productService.create(request);
     }
 
     @GetMapping
     public List<ListProductResponse> getAll() {
-        return productServiceImpl.getAll();
+        return productService.getAll();
     }
 
     @GetMapping("/{id}")
     public GetProductResponse getById(@PathVariable UUID id) {
-        return productServiceImpl.getById(id);
+        return productService.getById(id);
     }
 
     @PutMapping("/{id}")
-    public UpdatedProductResponse update(@PathVariable UUID id, @RequestBody UpdateProductRequest updateProductRequest) {
-        return productServiceImpl.update(id, updateProductRequest);
+    public UpdatedProductResponse update(@PathVariable UUID id,
+                                         @RequestBody @Valid UpdateProductRequest request) {
+        return productService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
-        productServiceImpl.delete(id);
+        productService.delete(id);
     }
 }

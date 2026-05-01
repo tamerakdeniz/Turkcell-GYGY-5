@@ -19,52 +19,47 @@ import com.turkcell.spring_starter.dto.GetCategoryResponse;
 import com.turkcell.spring_starter.dto.ListCategoryResponse;
 import com.turkcell.spring_starter.dto.UpdateCategoryRequest;
 import com.turkcell.spring_starter.dto.UpdatedCategoryResponse;
-import com.turkcell.spring_starter.service.CategoryServiceImpl;
+import com.turkcell.spring_starter.service.CategoryService;
 
-// GBu projedeki tüm entityler için tüm CRUD işlemleri kodlanmalı.
-// GET-GET BY ID-ADD-UPDATE-DELETE işlemleri kodlanmalı. (CRUD)
-// Kütüphane sisteminizi code-first oluşturun.
-
-// (sonraki ders) JPQL (Java Persistence Query Language) : SQL'e benzer bir sorgu dilidir. Entityler üzerinden sorgulama yapmamızı sağlar. SQL'den farklı olarak tablo isimleri yerine entity isimleri kullanılır. SQL'de kullanılan join, where, group by gibi ifadeler JPQL'de de kullanılabilir. JPQL, JPA tarafından sağlanan bir sorgu dilidir ve JPA'nın EntityManager aracılığıyla çalışır. JPQL sorguları, veritabanı bağımsızdır ve farklı veritabanlarında çalışabilir. JPQL, SQL'e benzer bir sözdizimine sahip olduğu için öğrenmesi kolaydır ve JPA ile birlikte kullanıldığında güçlü bir sorgulama yeteneği sağlar.
-
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/categories")
 public class CategoriesController {
-    private final CategoryServiceImpl categoryServiceImpl;
+    private final CategoryService categoryService;
 
-    public CategoriesController(CategoryServiceImpl categoryServiceImpl) {
-        this.categoryServiceImpl = categoryServiceImpl;
+    public CategoriesController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
-    @PostMapping()
-    public CreatedCategoryResponse create(@RequestBody CreateCategoryRequest createCategoryRequest)
-    {
-       return categoryServiceImpl.create(createCategoryRequest);
+    @PostMapping
+    public CreatedCategoryResponse create(@RequestBody @Valid CreateCategoryRequest request) {
+        return categoryService.create(request);
     }
 
     @GetMapping
     public List<ListCategoryResponse> getAll() {
-        return categoryServiceImpl.getAll();
+        return categoryService.getAll();
     }
 
     @GetMapping("/search")
     public List<ListCategoryResponse> search(@RequestParam String query) {
-        return categoryServiceImpl.search(query);
+        return categoryService.search(query);
     }
 
     @GetMapping("/{id}")
     public GetCategoryResponse getById(@PathVariable UUID id) {
-        return categoryServiceImpl.getById(id);
+        return categoryService.getById(id);
     }
 
     @PutMapping("/{id}")
-    public UpdatedCategoryResponse update(@PathVariable UUID id, @RequestBody UpdateCategoryRequest updateCategoryRequest) {
-        return categoryServiceImpl.update(id, updateCategoryRequest);
+    public UpdatedCategoryResponse update(@PathVariable UUID id,
+                                          @RequestBody @Valid UpdateCategoryRequest request) {
+        return categoryService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
-        categoryServiceImpl.delete(id);
+        categoryService.delete(id);
     }
 }

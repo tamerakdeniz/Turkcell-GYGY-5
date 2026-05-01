@@ -391,6 +391,8 @@ Her biri tek satır. Yine de **bedava** olarak:
 
 ## 9. Service Katmanı
 
+> ⚠️ **Not:** Bu bölümün kod parçaları **2026-05-01 öncesi** snapshot'ı yansıtır (`RuntimeException` + `CategoryRepository` doğrudan enjekte). Servislerin **güncel halinde** her servis sadece kendi repository'sine bağlı, interface'ler eklendi ve `RuntimeException` → `EntityNotFoundException`'a çevrildi. Güncel mimari için **Bölüm 19**'a bakın.
+
 ### 9.1. `ProductServiceImpl.java` — Tam analiz
 
 ```java
@@ -522,6 +524,8 @@ public void delete(UUID id) {
 
 ## 10. Controller Katmanı
 
+> ⚠️ **Not:** Bu bölümün `ProductsController` örneği 2026-05-01 öncesi snapshot. Aradaki ara state'te `ProductsController` sadece `POST` içeriyordu; **güncel halde** tam CRUD eklendi ve `Impl` yerine `ProductService` interface'ine bağlandı. Güncel endpoint listesi için **Bölüm 19.7**.
+
 ### `ProductsController.java`
 
 ```java
@@ -588,6 +592,8 @@ Toplam **15 endpoint**.
 ---
 
 ## 11. DTO Katmanı — Çok Detaylı Pattern
+
+> ⚠️ **Not:** Bu bölüm DTO'ların **POJO halini** (private alan + getter/setter) anlatır — pattern'ı görmek için. **2026-05-01 itibarıyla tüm DTO'lar `record`'a çevrildi**, validation eklendi. Güncel record örnekleri için **Bölüm 19.3**.
 
 Library'de her entity için **3 DTO** vardı (Create, Update, Response). Spring-starter'da **6 DTO** var:
 
@@ -779,19 +785,22 @@ products.stream().map(this::toResponse)    // (p) -> this.toResponse(p) yerine
 
 ## 15. Eksiklikler / İyileştirme Alanları
 
-| Eksiklik | Öneri |
+> 📌 İşaretler: ✅ Bölüm 18 ve/veya Bölüm 20 ile çözüldü, 🟡 kısmi, ⏳ açık.
+
+| Eksiklik | Durum / Öneri |
 |---|---|
-| **Validation eklenmemiş** | DTO'larda `@NotBlank`, `@Size`, `@NotNull` + controller'da `@Valid @RequestBody` |
-| **Generic `RuntimeException` fırlatılıyor** | Custom exception'lar (`ProductNotFoundException`) + `@ControllerAdvice` global handler |
-| **HTTP status code hep 200/500** | `ResponseEntity<T>` ile 201 Created, 204 No Content, 404 Not Found |
-| **Service interface yok** | `ProductService` interface + `ProductServiceImpl` ayrımı (test mock için) |
-| **`getAll()` pagination yok** | `Pageable`, `Page<T>` döndür: `Page<ListProductResponse> getAll(Pageable p)` |
-| **N+1 problem** | `@EntityGraph(attributePaths = "category")` |
-| **Lombok yok** | `@Getter @Setter @NoArgsConstructor` ile boilerplate'i azalt |
-| **Tag CRUD'ı boş** (üzerinde tag set'leme yok) | `Product.tags` set etme endpoint'i ekle |
-| **Auditing** | `@CreatedDate`, `@LastModifiedDate`, `@CreatedBy` |
-| **Şifre yaml'da düz metin** | `${DB_PASSWORD}` env var, `application-prod.yml` profili |
-| **Tutarsız annotation stili** | `@UuidGenerator()` vs `@UuidGenerator` — tek stile getir |
+| **Validation eklenmemiş** | ✅ Tüm CRUD DTO'ları (Create/Update + Tag/Category/Product/User) record olarak `@NotBlank`, `@Length`, `@NotNull`, `@Email` ile korunuyor. Controller'larda `@Valid` aktif. |
+| **Generic `RuntimeException` fırlatılıyor** | ✅ Tüm servislerde `EntityNotFoundException` (404) ile değiştirildi (Bölüm 20). |
+| **HTTP status code hep 200/500** | ✅ 201/400/401/404/409 dönüyor; `BusinessException.status` polymorphism'iyle yönetiliyor. |
+| **Service interface yok** | ✅ `CategoryService`, `ProductService`, `TagService`, `UserService` interface'leri eklendi; controller'lar interface'e bağlı. (Bkz. Bölüm 20 — interface'ler zorunlu değil, tercihe göre kaldırılabilir.) |
+| **Service-to-service repo erişimi** | ✅ `ProductServiceImpl` artık `CategoryRepository`'yi enjekte etmiyor; `Category` entity'sini `CategoryService.getCategoryById()` üzerinden alıyor. Her servis sadece **kendi repository**'sine bağlı. |
+| **`getAll()` pagination yok** | ⏳ `Pageable`, `Page<T>` döndür: `Page<ListProductResponse> getAll(Pageable p)` |
+| **N+1 problem** | ⏳ `@EntityGraph(attributePaths = "category")` |
+| **Lombok yok** | ✅ DTO'lar **record**'a çevrilince boilerplate problemi çözüldü (entity'ler hâlâ POJO; orada Lombok düşünülebilir). |
+| **Tag CRUD'ı boş** (üzerinde tag set'leme yok) | 🟡 Tag'ler için tam CRUD (Create/Get/List/Update/Delete) eklendi; ürüne tag bağlama endpoint'i hâlâ yok. |
+| **Auditing** | ⏳ `@CreatedDate`, `@LastModifiedDate`, `@CreatedBy` |
+| **Şifre yaml'da düz metin** | ⏳ `${DB_PASSWORD}` env var, `application-prod.yml` profili |
+| **Tutarsız annotation stili** | ⏳ `@UuidGenerator()` vs `@UuidGenerator` — tek stile getir |
 
 ---
 
@@ -1038,21 +1047,265 @@ Body: {
 
 | Eksiklik (15. bölüm) | Durum |
 |---|---|
-| Generic `RuntimeException` fırlatılıyor | ✅ **Users akışında çözüldü** (Product/Category/Tag halen `RuntimeException` kullanıyor) |
-| HTTP status code hep 200/500 | ✅ **Users akışında çözüldü** (201/400/401/409 dönüyor) |
-| Validation eklenmemiş | 🟡 **Kısmi** — `RegisterRequest` ve `LoginRequest` için `@Valid` kuruldu; CRUD DTO'larında halen yok |
+| Generic `RuntimeException` fırlatılıyor | ✅ **Tamamen çözüldü** — Product/Category/Tag de `EntityNotFoundException`'a geçti (Bkz. Bölüm 20) |
+| HTTP status code hep 200/500 | ✅ **Tamamen çözüldü** (201/400/401/404/409 dönüyor) |
+| Validation eklenmemiş | ✅ **Tamamen çözüldü** — Bölüm 20'de tüm CRUD DTO'ları `@Valid` ile korunuyor |
 
 ### 18.10 Sonraki adımlar (öneri)
 
-1. Aynı paterni Product/Category/Tag için uygula:
-   - `ProductNotFoundException extends BusinessException` (404 Not Found)
-   - `CategoryNotFoundException`, `TagNotFoundException`
+1. ~~Aynı paterni Product/Category/Tag için uygula~~ → ✅ **Yapıldı** (Bölüm 20). Tek `EntityNotFoundException` 4xx mesajıyla; entity başına ayrı sınıf üretmedik (DRY: davranış aynı, sadece mesaj değişiyor).
 2. Login başarılı dönüşünü `String` yerine `LoginResponse {token, expiresAt}` yap (JWT için zemin).
 3. `RegisterRequest`'e parola karmaşıklık doğrulayıcısı ekle (`@Pattern`).
-4. Diğer controller'larda da `@Valid` zorunlu kıl.
+4. ~~Diğer controller'larda da `@Valid` zorunlu kıl~~ → ✅ **Yapıldı** (Bölüm 20).
 
 ---
 
-## 19. Tek Cümle Özet
+## 19. Genişletilmiş CRUD + Servis İzolasyonu Refactor'u (2026-05-01)
 
-> Spring-starter projesi, Spring Boot'un **`@RestController` + `@Service` + `JpaRepository` + `@Entity`** dörtlüsünü en yalın şekliyle gösteren, **UUID ID'li 3 entity** üzerinden **15 REST endpoint** sağlayan, kapsamlı DTO ayrıştırması (Create/Created/Get/List/Update/Updated) ile **eğitim odaklı bir CRUD başlangıç projesidir** — Library projesinin daha basit ve yorumlu kardeşi.
+> Bu bölüm, 2026-05-01'de yapılan **mimari sertleştirme** turunun özetidir. Önceki refactor (Bölüm 18) sadece Users akışını ele almıştı; bu tur Product/Category/Tag akışlarını da aynı standartlara çekiyor ve **service-to-service repo izolasyonu** kuralını netleştiriyor.
+
+### 19.1 Refactor'un kapsamı
+
+| Konu | Önce | Sonra |
+|---|---|---|
+| **DTO tipi** | POJO (private alanlar + getter/setter) | **Java `record`** (immutable, otomatik accessor, ~70% daha az satır) |
+| **Generic `RuntimeException`** | Tüm "not found" durumları | **`EntityNotFoundException` (404)** |
+| **Service interface** | Yoktu (controller `Impl`'e bağlı) | `CategoryService`, `ProductService`, `TagService`, `UserService` (controller interface'e bağlı) |
+| **`ProductServiceImpl` bağımlılığı** | `ProductRepository` + `CategoryRepository` (cross-aggregate repo) | `ProductRepository` + **`CategoryService`** (service-to-service çağrı) |
+| **`CategoryServiceImpl` CRUD** | Eksik (`update`/`delete`/`getById` controller'da çağrılıyordu ama servis tarafında yoktu — derleme hatası riski) | Tam CRUD + `search` + service-to-service için `getCategoryById(UUID)` (entity döner) |
+| **`ProductsController`** | Sadece `POST` (4 endpoint eksikti) | Tam CRUD (`GET all`, `GET {id}`, `PUT {id}`, `DELETE {id}`) |
+| **CRUD DTO'larında `@Valid`** | Yoktu | `@NotBlank` + `@Length` + `@NotNull` zorunlu; controller'larda `@Valid` |
+
+### 19.2 "Servis kendi repository'sini çağırır" kuralı
+
+#### Kural
+
+> Bir servis, **yalnızca kendi aggregate'ine ait repository**'yi enjekte eder. Başka bir aggregate'in entity'sine ihtiyacı varsa, **o aggregate'in servisini** çağırır; karşı servis kendi repository'siyle veriyi getirir.
+
+#### Önce: ihlal
+
+```java
+@Service
+public class ProductServiceImpl {
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;   // ❌ başka aggregate'in repo'su
+
+    public CreatedProductResponse create(CreateProductRequest req) {
+        Category category = categoryRepository.findById(req.getCategoryId())   // ❌
+            .orElseThrow(() -> new RuntimeException("Category not found"));
+        // ...
+    }
+}
+```
+
+**Niye sorun?**
+1. **Encapsulation çatlağı:** Category aggregate'inin "var mı?" kuralı iki yerde tekrar eder (Category servisinde + Product servisinde).
+2. **Kategori silme/varlık kuralları değişirse** Product servisi **bilmez** — silent kırılma.
+3. Cross-aggregate transaction sınırlarını bulanıklaştırır.
+4. Test yazarken Category'nin tüm repo davranışını mock'lamak gerekir.
+
+#### Sonra: kural uygulandı
+
+```java
+@Service
+public class ProductServiceImpl implements ProductService {
+    private final ProductRepository productRepository;
+    private final CategoryService categoryService;        // ✅ servis (interface)
+
+    public CreatedProductResponse create(CreateProductRequest req) {
+        Category category = categoryService.getCategoryById(req.categoryId());  // ✅
+        // ... entity'yi al, doğrulama Category aggregate'inin sorumluluğunda
+    }
+}
+```
+
+```java
+public interface CategoryService {
+    // ... CRUD endpoint'leri için DTO döndüren metotlar ...
+    Category getCategoryById(UUID id);   // service-to-service için entity döndüren metot
+}
+
+@Service
+public class CategoryServiceImpl implements CategoryService {
+    private final CategoryRepository categoryRepository;   // sadece kendi repo'su
+
+    @Override
+    public Category getCategoryById(UUID id) {
+        return categoryRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Kategori bulunamadı: " + id));
+    }
+}
+```
+
+> 💡 **DTO mu entity mi döndürmeli?** İki tip metot var:
+> - **Controller'a açılan**: `getById(UUID)` → `GetCategoryResponse` (DTO)
+> - **Service-to-service**: `getCategoryById(UUID)` → `Category` (entity, çünkü çağıran servisin entity ile bir şey yapması gerekiyor — ör. JPA ilişki ataması)
+
+### 19.3 DTO'ların record'a dönüşü
+
+Tüm request/response DTO'ları **immutable `record`** oldu. Örnek:
+
+```java
+// Önce (CreatedProductResponse.java — 42 satır)
+public class CreatedProductResponse {
+    private UUID id;
+    private String name;
+    private String description;
+    private UUID categoryId;
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+    // ... 4 getter/setter daha
+}
+
+// Sonra (1 satır)
+public record CreatedProductResponse(UUID id, String name, String description, UUID categoryId) {}
+```
+
+Validasyonlu örnek:
+
+```java
+public record CreateProductRequest(
+    @NotBlank @Length(min = 3, max = 100) String name,
+    @Length(max = 500) String description,
+    @NotNull UUID categoryId
+) {}
+```
+
+#### Record kullanırken kazandıklarımız
+
+| Kazanım | Açıklama |
+|---|---|
+| Immutability | Alan değerleri constructor'da set, sonra değişmez. Thread-safe. |
+| Otomatik accessor | `req.getName()` yerine `req.name()` (no-arg accessor; getter prefix yok). |
+| Otomatik `equals`/`hashCode`/`toString` | Veri sınıfları için doğal davranış. |
+| Daha az satır | ~70% daha az boilerplate. |
+| Jackson uyumlu | Spring Boot 3+ ve Jackson 2.12+ record serialization/deserialization'ı doğal destekler. |
+
+#### Servis içi kullanım farkı
+
+Önce: `req.getName()` → Sonra: `req.name()`. Bütün `Impl`'ler bu accessor stiline geçirildi.
+
+### 19.4 `EntityNotFoundException` tasarım kararı
+
+```java
+public class EntityNotFoundException extends BusinessException {
+    public EntityNotFoundException(String message) {
+        super("Kayıt bulunamadı", "ENTITY_NOT_FOUND", message, HttpStatus.NOT_FOUND);
+    }
+}
+```
+
+#### Neden `ProductNotFoundException` + `CategoryNotFoundException` değil?
+
+- Davranış birebir aynı (404 + benzer mesaj).
+- Mesajda hangi entity olduğu zaten geçiyor: `"Kategori bulunamadı: <id>"`.
+- 3 ayrı sınıf üretmek **DRY ihlali** — sınıf sayısını artırır, yarar getirmez.
+- İhtiyaç doğunca (örn. `ProductNotFoundException`'a domain-specific davranış eklenecekse) split edilir.
+
+#### Kullanım
+
+```java
+// CategoryServiceImpl
+return categoryRepository.findById(id)
+    .orElseThrow(() -> new EntityNotFoundException("Kategori bulunamadı: " + id));
+
+// ProductServiceImpl
+return productRepository.findById(id)
+    .orElseThrow(() -> new EntityNotFoundException("Ürün bulunamadı: " + id));
+
+// TagServiceImpl
+return tagRepository.findById(id)
+    .orElseThrow(() -> new EntityNotFoundException("Etiket bulunamadı: " + id));
+```
+
+`GlobalExceptionHandler`'a **dokunulmadı** — `@ExceptionHandler(BusinessException.class)` polymorphism ile yeni alt-tipi otomatik yakalıyor. Bu, Bölüm 18.3'teki tasarımın getirisinin pratikteki kanıtı.
+
+### 19.5 Service interface'leri — tartışma
+
+| Lehte | Aleyhte |
+|---|---|
+| Test mock'lama biraz daha doğal (`@MockBean ProductService`) | Tek impl varsa pure boilerplate |
+| Çoklu impl ihtimali (örn. `CachedCategoryServiceImpl`) | YAGNI: gerektiğinde extract edilebilir |
+| "Soyutlama hijyeni" — controller `Impl` adına bağlı kalmaz | Spring CGLIB ile interface'siz proxy de mümkün |
+| Kurumsal kod tabanlarında geleneksel pattern | Modern Spring rehberleri "interface eklemeden başla" diyor |
+
+> 📝 **Bu projede tutuldu** çünkü hem geleneksel pattern öğretici, hem de service-to-service çağrıda interface'e bağımlılık daha temiz görünüyor. **Zorunlu değil** — bir sonraki refactor'da kaldırılabilir; controller'lar `Impl` sınıfına bağlandığında da çalışır.
+
+### 19.6 Yeni / değişen dosyalar
+
+```
+exception/
+└── EntityNotFoundException.java        (YENİ — 404 Not Found)
+
+service/
+├── CategoryService.java                (YENİ — interface)
+├── ProductService.java                 (YENİ — interface)
+├── TagService.java                     (YENİ — interface)
+├── UserService.java                    (YENİ — interface)
+├── CategoryServiceImpl.java            (DEĞİŞTİ — tam CRUD + getCategoryById)
+├── ProductServiceImpl.java             (DEĞİŞTİ — tam CRUD + CategoryService DI)
+├── TagServiceImpl.java                 (DEĞİŞTİ — RuntimeException → EntityNotFoundException)
+└── UserServiceImpl.java                (DEĞİŞTİ — interface implements + record accessor)
+
+controller/
+├── CategoriesController.java           (DEĞİŞTİ — interface DI + @Valid)
+├── ProductsController.java             (DEĞİŞTİ — eksik 4 endpoint eklendi, interface DI)
+├── TagsController.java                 (DEĞİŞTİ — interface DI + @Valid)
+└── UsersController.java                (DEĞİŞTİ — interface DI)
+
+dto/  (hepsi POJO → record)
+├── CreateCategoryRequest, UpdateCategoryRequest         (validation eklendi)
+├── CreatedCategoryResponse, GetCategoryResponse,
+│   ListCategoryResponse, UpdatedCategoryResponse
+├── UpdateProductRequest                                  (validation eklendi)
+├── CreatedProductResponse, GetProductResponse,
+│   ListProductResponse, UpdatedProductResponse
+├── CreateTagRequest, UpdateTagRequest                   (validation eklendi)
+├── CreatedTagResponse, GetTagResponse,
+│   ListTagResponse, UpdatedTagResponse
+├── RegisterRequest, LoginRequest                        (record + validation)
+├── ErrorResponse, ValidationErrorResponse               (record)
+```
+
+### 19.7 Endpoint tablosu — güncel
+
+| Method | Path | Açıklama |
+|---|---|---|
+| **Categories** | | |
+| POST | `/api/categories` | Yeni kategori (`@Valid CreateCategoryRequest`) |
+| GET | `/api/categories` | Tüm kategoriler |
+| GET | `/api/categories/search?query=` | Ada göre arama (JPQL `LIKE`) |
+| GET | `/api/categories/{id}` | Kategori detayı |
+| PUT | `/api/categories/{id}` | Kategori güncelle (`@Valid UpdateCategoryRequest`) |
+| DELETE | `/api/categories/{id}` | Kategori sil |
+| **Products** | | |
+| POST | `/api/products` | Yeni ürün (kategori varlık kontrolü servis-to-servis) |
+| GET | `/api/products` | Tüm ürünler |
+| GET | `/api/products/{id}` | Ürün detayı (kategori adı flat olarak) |
+| PUT | `/api/products/{id}` | Ürün güncelle |
+| DELETE | `/api/products/{id}` | Ürün sil |
+| **Tags** | | |
+| POST | `/api/tags` | Yeni etiket |
+| GET | `/api/tags` | Tüm etiketler |
+| GET | `/api/tags/{id}` | Etiket detayı |
+| PUT | `/api/tags/{id}` | Etiket güncelle |
+| DELETE | `/api/tags/{id}` | Etiket sil |
+| **Users** | | |
+| POST | `/api/users` | Kayıt — 201 Created |
+| POST | `/api/users/login` | Giriş — 200 OK |
+
+**Toplam 18 endpoint** (önce 16'ydı; ProductsController'a 4 endpoint eklendi, search korunuyor).
+
+### 19.8 Sonraki adımlar
+
+1. JWT eklendiğinde `LoginResponse {token, expiresAt}` döndür.
+2. `@EntityGraph(attributePaths = "category")` ile N+1 problemini çöz (`Product.getCategory().getName()` her satırda DB sorgusu doğuruyor).
+3. `Page<ListProductResponse>` ile pagination.
+4. `@UuidGenerator` vs `@UuidGenerator()` tutarsızlığı temizle.
+5. Karar: service interface'lerini tutmaya devam mı yoksa kaldır mı? — Ekip kararı.
+
+---
+
+## 20. Tek Cümle Özet
+
+> Spring-starter projesi, Spring Boot'un **`@RestController` + `@Service` + `JpaRepository` + `@Entity`** dörtlüsünü, **UUID ID'li 3 entity** üzerinden **18 REST endpoint** + **kimlik doğrulama** ile gösteren; **record DTO'lar**, **`BusinessException` hiyerarşisi** (`EntityNotFoundException` / `UserAlreadyExistsException` / `InvalidCredentialsException`), **service-to-service repo izolasyonu** ve **interface tabanlı service katmanı** ile orta düzey kurumsal pattern'ları öğreten **eğitim odaklı CRUD başlangıç projesidir** — Library projesinin daha basit ama mimari olarak daha sağlam kardeşi.
