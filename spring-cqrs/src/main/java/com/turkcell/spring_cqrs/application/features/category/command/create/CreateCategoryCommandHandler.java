@@ -1,7 +1,5 @@
 package com.turkcell.spring_cqrs.application.features.category.command.create;
 
-import java.util.UUID;
-
 import org.springframework.stereotype.Component;
 
 import com.turkcell.spring_cqrs.application.features.category.rule.CategoryBusinessRules;
@@ -10,7 +8,7 @@ import com.turkcell.spring_cqrs.domain.Category;
 import com.turkcell.spring_cqrs.persistence.repository.CategoryRepository;
 
 @Component
-public class CreateCategoryCommandHandler implements CommandHandler<CreateCategoryCommand, UUID> 
+public class CreateCategoryCommandHandler implements CommandHandler<CreateCategoryCommand, CreatedCategoryResponse> 
 {
     private final CategoryRepository categoryRepository;
     private final CategoryBusinessRules categoryBusinessRules;
@@ -20,7 +18,7 @@ public class CreateCategoryCommandHandler implements CommandHandler<CreateCatego
     }
 
     @Override
-    public UUID handle(CreateCategoryCommand command) 
+    public CreatedCategoryResponse handle(CreateCategoryCommand command) 
     {
         categoryBusinessRules.categoryWithSameNameMustNotExist(command.name());
 
@@ -29,7 +27,9 @@ public class CreateCategoryCommandHandler implements CommandHandler<CreateCatego
 
         categoryRepository.save(category);
 
-        return category.getId();
+
+        CreatedCategoryResponse response = new CreatedCategoryResponse(category.getId(), category.getName());
+        return response;
     }
 
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.turkcell.spring_cqrs.application.features.category.command.create.CreateCategoryCommand;
+import com.turkcell.spring_cqrs.application.features.category.command.create.CreatedCategoryResponse;
 import com.turkcell.spring_cqrs.core.mediator.Mediator;
 
 @RequestMapping("/api/categories")
@@ -20,7 +21,7 @@ public class CategoriesController {
     }
 
     @PostMapping
-    public UUID create(@RequestBody CreateCategoryCommand command){
+    public CreatedCategoryResponse create(@RequestBody CreateCategoryCommand command){
         return mediator.send(command);
     }
 }
