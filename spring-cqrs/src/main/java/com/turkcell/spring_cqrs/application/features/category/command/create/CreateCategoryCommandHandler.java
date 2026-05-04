@@ -17,13 +17,11 @@ public class CreateCategoryCommandHandler implements CommandHandler<CreateCatego
 
 
     public CreateCategoryCommandHandler(CategoryRepository categoryRepository,
-        CategoryBusinessRules categoryBusinessRules, CategoryMapper categoryMapper) {
+            CategoryBusinessRules categoryBusinessRules, CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
         this.categoryBusinessRules = categoryBusinessRules;
         this.categoryMapper = categoryMapper;
     }
-
-
 
 
     @Override
