@@ -1,8 +1,9 @@
 package com.turkcell.spring_cqrs.application.features.category.command.create;
 
+// Command-Query -> DTO
+
 import java.util.UUID;
 
 import com.turkcell.spring_cqrs.core.mediator.cqrs.Command;
 
-// Command-Query -> DTO
-public record CreateCategoryCommand(String name,String description) implements Command<UUID> {}
+public record CreateCategoryCommand(String name) implements Command<UUID> {}
