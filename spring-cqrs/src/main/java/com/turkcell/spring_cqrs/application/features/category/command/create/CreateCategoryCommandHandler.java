@@ -2,6 +2,7 @@ package com.turkcell.spring_cqrs.application.features.category.command.create;
 
 import org.springframework.stereotype.Component;
 
+import com.turkcell.spring_cqrs.application.features.category.mapper.CategoryMapper;
 import com.turkcell.spring_cqrs.application.features.category.rule.CategoryBusinessRules;
 import com.turkcell.spring_cqrs.core.mediator.cqrs.CommandHandler;
 import com.turkcell.spring_cqrs.domain.Category;
@@ -12,24 +13,28 @@ public class CreateCategoryCommandHandler implements CommandHandler<CreateCatego
 {
     private final CategoryRepository categoryRepository;
     private final CategoryBusinessRules categoryBusinessRules;
-    public CreateCategoryCommandHandler(CategoryRepository categoryRepository, CategoryBusinessRules categoryBusinessRules) {
+    private final CategoryMapper categoryMapper;
+
+
+    public CreateCategoryCommandHandler(CategoryRepository categoryRepository,
+        CategoryBusinessRules categoryBusinessRules, CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
         this.categoryBusinessRules = categoryBusinessRules;
+        this.categoryMapper = categoryMapper;
     }
+
+
+
 
     @Override
     public CreatedCategoryResponse handle(CreateCategoryCommand command) 
     {
-        categoryBusinessRules.categoryWithSameNameMustNotExist(command.name());
+        categoryBusinessRules.categoryWithSameNameMustNotExist(command.name()); // rules
 
-        Category category = new Category();
-        category.setName(command.name());
+        Category category = categoryMapper.categoryFromCreateCommand(command); // mapping
 
-        categoryRepository.save(category);
+        categoryRepository.save(category); // repo
 
-
-        CreatedCategoryResponse response = new CreatedCategoryResponse(category.getId(), category.getName());
-        return response;
+        return categoryMapper.createdCategoryResponseFromCategory(category); // mapping
     }
-
 }
