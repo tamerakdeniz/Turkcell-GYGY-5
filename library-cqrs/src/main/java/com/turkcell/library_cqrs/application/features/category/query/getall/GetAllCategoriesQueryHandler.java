@@ -1,14 +1,14 @@
-package com.turkcell.spring_cqrs.application.features.category.query.getall;
+package com.turkcell.library_cqrs.application.features.category.query.getall;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import com.turkcell.spring_cqrs.application.features.category.mapper.CategoryMapper;
-import com.turkcell.spring_cqrs.core.mediator.cqrs.QueryHandler;
-import com.turkcell.spring_cqrs.domain.Category;
-import com.turkcell.spring_cqrs.persistence.repository.CategoryRepository;
+import com.turkcell.library_cqrs.application.features.category.mapper.CategoryMapper;
+import com.turkcell.library_cqrs.core.mediator.cqrs.QueryHandler;
+import com.turkcell.library_cqrs.domain.Category;
+import com.turkcell.library_cqrs.persistence.repository.CategoryRepository;
 
 @Component
 public class GetAllCategoriesQueryHandler implements
@@ -22,8 +22,6 @@ public class GetAllCategoriesQueryHandler implements
         this.categoryMapper = categoryMapper;
     }
 
-
-
     @Override
     public Page<GetAllCategoriesResponse> handle(GetAllCategoriesQuery query) {
         // Hibernate sana sağladığı bir özellik.
@@ -33,5 +31,4 @@ public class GetAllCategoriesQueryHandler implements
 
         return categories.map(categoryMapper::getAllCategoriesResponseFromCategory);
     }
-
 }
