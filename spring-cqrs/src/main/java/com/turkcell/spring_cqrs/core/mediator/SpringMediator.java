@@ -1,16 +1,20 @@
 package com.turkcell.spring_cqrs.core.mediator;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.stereotype.Component;
 
 import com.turkcell.spring_cqrs.core.mediator.cqrs.Command;
 import com.turkcell.spring_cqrs.core.mediator.cqrs.CommandHandler;
 import com.turkcell.spring_cqrs.core.mediator.cqrs.Query;
 import com.turkcell.spring_cqrs.core.mediator.cqrs.QueryHandler;
+import com.turkcell.spring_cqrs.core.mediator.pipeline.PipelineBehavior;
+import com.turkcell.spring_cqrs.core.mediator.pipeline.RequestHandlerDelegate;
 
 import jakarta.annotation.PostConstruct;
 
@@ -20,14 +24,16 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class SpringMediator implements Mediator
 {
+
+    private final List<PipelineBehavior> behaviors;
     private final Map<Class<?>, CommandHandler<?, ?>> commandHandlers = new HashMap<>();
     private final Map<Class<?>, QueryHandler<?, ?>> queryHandlers = new HashMap<>();
 
     private final ApplicationContext context;
 
-    public SpringMediator(ApplicationContext context) {
+    public SpringMediator(ApplicationContext context, List<PipelineBehavior> behaviors) {
         this.context = context;
-    }
+        this.behaviors = behaviors.stream().sorted(AnnotationAwareOrderComparator.INSTANCE).toList();    }
 
     @PostConstruct
     @SuppressWarnings("rawtypes")
@@ -60,9 +66,9 @@ public class SpringMediator implements Mediator
         if (handler == null)
             throw new IllegalStateException("Handler bulunamadı: " + command.getClass().getSimpleName());
 
-        return handler.handle(command);
+        return invokePipeline(command, () -> handler.handle(command));
     }
-
+    
     @Override
     @SuppressWarnings("unchecked")
     public <R> R send(Query<R> query) {
@@ -72,7 +78,7 @@ public class SpringMediator implements Mediator
         if (handler == null)
             throw new IllegalStateException("Handler bulunamadı: " + query.getClass().getSimpleName());
 
-        return handler.handle(query);
+                return invokePipeline(query, () -> handler.handle(query));
     }
 
     private Class<?> resolveRequestType(Class<?> handlerClass, Class<?> handlerInterface) {
@@ -81,5 +87,24 @@ public class SpringMediator implements Mediator
             throw new IllegalStateException(
                 "Handler için generic tip çözümlenemedi: " + handlerClass.getName());
         return generics[0];
+    }
+
+
+    // zincir başlatıcı
+    private <R> R invokePipeline(Object request, RequestHandlerDelegate<R> handlerInvocation)
+    {
+        RequestHandlerDelegate<R> next = handlerInvocation; // Handler'ın kendisi
+
+        for(int i = behaviors.size() - 1; i >= 0; i--) // Sıraya göre tersten Behaviorları çağır.
+        {
+            PipelineBehavior behavior = behaviors.get(i);
+            if(!behavior.supports(request)) continue;
+
+            RequestHandlerDelegate<R> current = next;
+            next = () -> behavior.handle(request, current);
+        }
+        // döngü bitti.
+
+        return next.invoke(); // handlerın kendisi
     }
 }
