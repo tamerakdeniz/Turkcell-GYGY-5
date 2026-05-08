@@ -10,18 +10,23 @@ import com.turkcell.spring_cqrs.core.mediator.pipeline.RequestHandlerDelegate;
 @Order(20)
 public class LoggingBehavior implements PipelineBehavior {
 
-    
-
     // sadece şunları destekler:
     @Override
     public boolean supports(Object request) {
-       return !(request instanceof NotLoggableRequest); // eğer ilgili request (command/query) LoggableRequest ile imzalanmış ise yap.
+       return !(request instanceof NotLoggableRequest); // eğer ilgili request (command/query) NotLoggableRequest ile imzalanmamış ise yap.
     }
 
     @Override
     public <R> R handle(Object request, RequestHandlerDelegate<R> next) {
-        System.out.println("Loglama çalışıyor..");
-        return next.invoke();
+        String requestName = request.getClass().getSimpleName();
+
+        System.out.println("[LOG][REQUEST] " + requestName + " -> " + request);
+
+        R response = next.invoke();
+
+        System.out.println("[LOG][RESPONSE] " + requestName + " -> " + response);
+
+        return response;
     }
 
 }

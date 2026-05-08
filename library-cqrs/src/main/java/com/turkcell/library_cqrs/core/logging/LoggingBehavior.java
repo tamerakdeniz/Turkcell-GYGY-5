@@ -18,8 +18,15 @@ public class LoggingBehavior implements PipelineBehavior {
 
     @Override
     public <R> R handle(Object request, RequestHandlerDelegate<R> next) {
-        System.out.println("Loglama çalışıyor..");
-        return next.invoke();
+        String requestName = request.getClass().getSimpleName();
+
+        System.out.println("[LOG][REQUEST] " + requestName + " -> " + request);
+
+        R response = next.invoke();
+
+        System.out.println("[LOG][RESPONSE] " + requestName + " -> " + response);
+
+        return response;
     }
 
 }

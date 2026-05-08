@@ -27,6 +27,10 @@ public class CreateCategoryCommandHandler implements CommandHandler<CreateCatego
     @Override
     public CreatedCategoryResponse handle(CreateCategoryCommand command) 
     {
+        // Aşağıdaki yorum satırı Gecikme simülasyonudur. 
+        // Gerçek uygulamalarda, bu tür gecikmeler genellikle veri tabanı işlemleri, harici API çağrıları veya karmaşık iş mantığı nedeniyle ortaya çıkabilir.
+        // Bu tür gecikmelerin etkilerini test etmek için kullanılabilirler. 
+        // try { Thread.sleep(3500); } catch (InterruptedException ignored) {}
         categoryBusinessRules.categoryWithSameNameMustNotExist(command.name()); // rules
 
         Category category = categoryMapper.categoryFromCreateCommand(command); // mapping
