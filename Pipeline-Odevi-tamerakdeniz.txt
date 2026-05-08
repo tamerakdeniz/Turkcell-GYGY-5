@@ -1,8 +1,0 @@
-spring-cqrs ve library-cqrs uygulanmış commit: https://github.com/tamerakdeniz/Turkcell-GYGY-5/commit/6bb440ff16f935cf9796aabe84565413e373d5be
-
-Performance monitoring testlerinin gerçekleştirilebilmesi için, `CreateCategoryCommandHandler` sınıfında yer alan `handle(CreateCategoryCommand command)` metodu içerisindeki aşağıdaki gecikme simülasyonu kod bloğunun aktif hale getirilmesi gerekmektedir:
-
-try { Thread.sleep(3500); } catch (InterruptedException ignored) {}
-
-Bu kod bloğu, veri tabanı işlemleri veya harici servis çağrıları gibi gerçek senaryolarda oluşabilecek gecikmeleri simüle etmek amacıyla kullanılmaktadır.
-
