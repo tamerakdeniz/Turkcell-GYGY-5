@@ -2,6 +2,7 @@ package com.turkcell.spring_cqrs.core.security.jwt;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -30,12 +31,17 @@ public class JwtService {
 
     public String generate(UUID userId, String email)
     {
+        return generate(userId, email, List.of());
+    }
+
+    public String generate(UUID userId, String email, List<String> roles)
+    {
         Instant now = Instant.now();
         return Jwts.builder()
                    .issuer(this.jwtProperties.getIssuer())
                    .subject(userId.toString())
                    .claim("email", email)
-                   .claim("deneme", "deneme")
+                   .claim("roles", roles)
                    .issuedAt(Date.from(now))
                    .expiration(Date.from(now.plusSeconds(this.jwtProperties.getExpirationInSeconds())))
                    .signWith(this.signingKey)
@@ -50,6 +56,19 @@ public class JwtService {
     public String extractEmail(String token) {
         return extractClaim(token, claims -> claims.get("email", String.class));
     }   
+
+    public List<String> extractRoles(String token) {
+        return extractClaim(token, claims -> {
+            Object rolesClaim = claims.get("roles");
+            if (rolesClaim instanceof List<?> roles) {
+                return roles.stream()
+                            .filter(String.class::isInstance)
+                            .map(String.class::cast)
+                            .toList();
+            }
+            return List.of();
+        });
+    }
 
     public boolean isTokenValid(String token) {
         try {

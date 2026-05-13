@@ -33,6 +33,7 @@ public class RegisterCommandHandler implements CommandHandler<RegisterCommand, R
         User user = new User();
         user.setEmail(command.email());
         user.setPassword(passwordEncoder.encode(command.password()));
+        user.setRole("USER");
 
         userRepository.save(user);
         

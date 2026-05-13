@@ -26,11 +26,13 @@ public class AuthorizationBehavior implements PipelineBehavior {
     public <R> R handle(Object request, RequestHandlerDelegate<R> next) {
 
         if(!userContext.isAuthenticated())
-            throw new RuntimeException("Giriş yapmalısın..");
+            throw new AuthenticationException("Giriş yapmalısın.");
 
-        // Özel bir exception türü belirle.. 
-        // Handlerda bu exceptionu eğer giriş yapılmamısa 401, (unauthenticatedException) eğer giriş yapılmış
-        //  ama yetkisi (rol yetersizse) yoksa 403 (UnauthorizedException) dönecek şekilde güncelle.
+        AuthorizableRequest authorizableRequest = (AuthorizableRequest) request;
+        if (!authorizableRequest.getRequiredRoles().isEmpty()
+            && userContext.getRoles().stream().noneMatch(authorizableRequest.getRequiredRoles()::contains)) {
+            throw new AuthorizationException("Bu işlem için yetkin yok.");
+        }
 
         return next.invoke(); // zincirdeki sonraki halkayı çağır..
     }

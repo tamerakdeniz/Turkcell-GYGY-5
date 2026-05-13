@@ -1,7 +1,6 @@
 package com.turkcell.spring_cqrs.core.security.filter;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -36,19 +35,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             String jwtHeader = request.getHeader("Authorization");
 
-            if (jwtHeader != null) {
+            userContext.clear();
+
+            if (jwtHeader != null && jwtHeader.startsWith("Bearer ")) {
                 String token = jwtHeader.substring(7); // "Bearer " kısmını atlamak için
                 // token doğrulama işlemleri yapılabilir
                 try {
                     String userId = jwtService.extractUserId(token);
                     String email = jwtService.extractEmail(token);
-                    // TODO : Implement roles extraction from JWT if needed
-                    List<String> roles = Collections.EMPTY_LIST; // jwt'den roller de çekilebilir
+                    List<String> roles = jwtService.extractRoles(token);
                     userContext.setUser(userId, email, roles); // roller de jwt'den çekilebilir
                 } catch (Exception e) {
-                    // SecurityContextHolder.Clear(); // Geçersiz token durumunda güvenlik bağlamını temizleyebiliriz
+                    userContext.clear();
                 }
             }
-            filterChain.doFilter(request, response); // chain'e devam et - ilerletir
+            try {
+                filterChain.doFilter(request, response); // chain'e devam et - ilerletir
+            } finally {
+                userContext.clear();
+            }
     }
 }
